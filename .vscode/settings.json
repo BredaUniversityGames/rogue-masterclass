@@ -1,0 +1,6 @@
+{
+    "wren.additionalModuleDirectories":
+     [
+        "../xs/games/shared/modules",
+     ]
+}
