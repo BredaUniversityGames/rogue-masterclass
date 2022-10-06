@@ -10,7 +10,6 @@ class State {
     static idle         { 3 }
 }
 
-
 class Game {
     static empty    { 0 }
     static floor    { 1 } 
@@ -80,8 +79,6 @@ class Game {
         }        
 
     }
-
-
 
     static initLevel() {
         __level = __level + 1
@@ -158,7 +155,7 @@ class Game {
                 moveTile(p.x, p.y, 0, 1)
             }
 
-            var pn = findFirst(Game.player)
+            var pn = findAll(Game.player)[0]
             if(pn != p) {
                 __state = State.computerTurn
             }
@@ -184,24 +181,13 @@ class Game {
             return
         }
 
-        var p = findFirst(Game.player)
+        var p = findAll(Game.player)[0]
         for (e in enemies) {
             var d = p - e
             d = manhattanize(d)
             moveTile(e.x, e.y, d.x, d.y)            
         }
         __state = State.playerTurn
-    }
-
-    static findFirst(type) {
-        for (x in 0...__grid.width) {
-            for (y in 0...__grid.height) {
-                if(__grid[x, y] == type) {
-                    return Vec2.new(x, y)
-                }
-            }
-        }
-        return Vec2.new(-1, -1)
     }
 
     static findAll(type) {
