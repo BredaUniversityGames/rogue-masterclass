@@ -4,20 +4,6 @@ import "xs_assert" for Assert
 import "random" for Random              // Random is a part of the Wren library
 import "grid" for Grid
 
-class Directions {
-    static [i] {
-        if(i == 0) {
-            return Vec2.new(0, 1)   // Up
-        } else if(i == 1) {
-            return Vec2.new(1, 0)   // Right
-        } else if(i == 2) {
-            return Vec2.new(0, -1)   // Down
-        } else if(i == 3) {
-            return Vec2.new(-1, 0)   // Left
-        }
-    }
-}
-
 class State {
     static playerTurn   { 1 }
     static computerTurn { 2 }
@@ -30,14 +16,13 @@ class Game {
     static wall     { 2 }
     static player   { 3 }
     static enemy    { 4 }
-
-    // static bomb   { 5 }
+    static bomb     { 5 }
 
     static config() {
-        Data.setString("Title", "Rogue Like", Data.system)
-        Data.setNumber("Width", 640, Data.system)
-        Data.setNumber("Height", 360, Data.system)
-        Data.setNumber("Multiplier", 4, Data.system)
+        Data.setString("Title", "Gridr", Data.system)
+        Data.setNumber("Width", 240, Data.system)
+        Data.setNumber("Height", 240, Data.system)
+        Data.setNumber("Multiplier", 2, Data.system)
     }
 
     static init() {
@@ -49,44 +34,12 @@ class Game {
         __grid = Grid.new(gs, gs, Game.player)
         initLevel()
 
-        var tilesImage = Render.loadImage("[game]/assets/tiles_dungeon.png")
-        var heroImage = Render.loadImage("[game]/assets/chara_hero.png")
-        var slimeImage = Render.loadImage("[game]/assets/chara_slime.png")
-
-        __wallSprites = [
-            Render.createGridSprite(tilesImage, 20, 24, 0, 20),     // 0000
-            Render.createGridSprite(tilesImage, 20, 24, 0, 23),     // 0001
-            Render.createGridSprite(tilesImage, 20, 24, 1, 20),     // 0010
-            Render.createGridSprite(tilesImage, 20, 24, 1, 22),     // 0011
-            Render.createGridSprite(tilesImage, 20, 24, 0, 21),     // 0100
-            Render.createGridSprite(tilesImage, 20, 24, 0, 22),     // 0101
-            Render.createGridSprite(tilesImage, 20, 24, 1, 21),     // 0110
-            Render.createGridSprite(tilesImage, 20, 24, 3, 23),     // 0111
-            Render.createGridSprite(tilesImage, 20, 24, 3, 20),     // 1000
-            Render.createGridSprite(tilesImage, 20, 24, 2, 22),     // 1001    
-            Render.createGridSprite(tilesImage, 20, 24, 2, 20),     // 1010
-            Render.createGridSprite(tilesImage, 20, 24, 3, 22),     // 1011
-            Render.createGridSprite(tilesImage, 20, 24, 2, 21),     // 1100
-            Render.createGridSprite(tilesImage, 20, 24, 1, 23),     // 1101
-            Render.createGridSprite(tilesImage, 20, 24, 2, 23),     // 1110    
-            Render.createGridSprite(tilesImage, 20, 24, 3, 21)      // 1111    
-
-        ]
-        //__floorSprite = Render.createGridSprite(tilesImage, 20, 24, 20, 1)
-        __floorSprites = [
-            Render.createGridSprite(tilesImage, 20, 24, 0, 0),
-            Render.createGridSprite(tilesImage, 20, 24, 1, 0),
-            Render.createGridSprite(tilesImage, 20, 24, 2, 0),
-            Render.createGridSprite(tilesImage, 20, 24, 0, 1),
-            Render.createGridSprite(tilesImage, 20, 24, 1, 1),
-            Render.createGridSprite(tilesImage, 20, 24, 2, 1),
-            Render.createGridSprite(tilesImage, 20, 24, 0, 2),
-            Render.createGridSprite(tilesImage, 20, 24, 1, 2),
-            Render.createGridSprite(tilesImage, 20, 24, 2, 2)
-        ]
-
-        __playerSprite = Render.createGridSprite(heroImage, 4, 11, 0, 0)
-        __enemySprite = Render.createGridSprite(slimeImage, 4, 11, 0, 0)
+        var img = Render.loadImage("[game]/assets/1bit_part2.png")
+        var s = 21
+        __wallSprite = Render.createGridSprite(img, s, s, 20, 1)
+        __floorSprite = Render.createGridSprite(img, s, s, 18, 0)
+        __playerSprite = Render.createGridSprite(img, s, s, 18, 7)
+        __enemySprite = Render.createGridSprite(img, s, s, 11, 18)
     }   
     
     static update(dt) {
@@ -100,7 +53,7 @@ class Game {
     }
 
     static render() {
-        var s = 16
+        var s = 18
         var sx = (__grid.width - 1) * -s / 2
         var sy = (__grid.height-1)  * -s / 2
 
@@ -111,28 +64,20 @@ class Game {
                 var py = sy + y * s
                 var sprite = null      
                 var color = null
-                if(v == Game.wall) {
-                    var pos = Vec2.new(x, y)  
-                    var flag = 0
-                    for(i in 0...4) {
-                        var n = pos + Directions[i]
-                        if(__grid.isValidPosition(n.x, n.y) && __grid[n.x, n.y] == Game.wall) {
-                            flag = flag | 1 << i  // |
-                        }
-                    }
-                    Render.renderSprite(__wallSprites[flag], px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)                    
-                } else {
-                    var i = (x + y) % __floorSprites.count
-                    Render.renderSprite(__floorSprites[i], px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
-                }
-
                 if(v == Game.player) {
-                    Render.renderSprite(__playerSprite, px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)                                        
+                    Render.renderSprite(__floorSprite, px, py, 1.0, 0.0, 0x1E1E1EFF, 0x0, Render.spriteCenter)
+                    Render.renderSprite(__playerSprite, px, py, 1.0, 0.0, 0x5555FFFF, 0x0, Render.spriteCenter)                                        
                 } else if(v == Game.enemy) {
-                    Render.renderSprite(__enemySprite, px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
+                    Render.renderSprite(__floorSprite, px, py, 1.0, 0.0, 0x1E1E1EFF, 0x0, Render.spriteCenter)
+                    Render.renderSprite(__enemySprite, px, py, 1.0, 0.0, 0xFF5555FF, 0x0, Render.spriteCenter)
+                } else if(v == Game.wall) {    
+                    Render.renderSprite(__wallSprite, px, py, 1.0, 0.0, 0xEEEEEEFF, 0x0, Render.spriteCenter)                    
+                } else {
+                    Render.renderSprite(__floorSprite, px, py, 1.0, 0.0, 0x5E5E5EFF, 0x0, Render.spriteCenter)
                 }
             }
-        }
+        }        
+
     }
 
     static initLevel() {
