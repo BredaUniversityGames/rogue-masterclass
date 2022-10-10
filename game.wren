@@ -2,7 +2,7 @@ import "xs" for Data, Input, Render     // These are the parts of the xs we will
 import "xs_math" for Vec2
 import "xs_assert" for Assert
 import "random" for Random              // Random is a part of the Wren library
-import "grid" for Grid
+import "sparse_grid" for SpraseGrid
 
 class Directions {
     static [i] {
@@ -19,22 +19,6 @@ class Directions {
 }
 
 class Walker {
-    /*
-
-    construct new(position, grid, random, value) {
-        _position = position
-        _grid = grid
-        _random = random
-        _value = value
-        _direction = Directions[random.int(0, 4)]
-        // _grid[_position.x, _position.y] = 
-    }
-
-    walk() {
-        _grid[_position.x, pos]
-    }    
-    */
-
     construct new(position, direction) {
         _position = position
         _direction = direction
@@ -71,11 +55,15 @@ class Game {
 
     static init() {
         var gs = 11 // Grid size
+
+        __width = gs
+        __height = gs
+
         __level = 0                
         __random = Random.new()
         __state = State.playerTurn
         __time = 0
-        __grid = Grid.new(gs, gs, Game.empty)
+        __grid = SpraseGrid.new(Game.empty)
 
         __shortBrake = Data.getNumber("Short Brake")
         __longBrake = Data.getNumber("Long Brake")
@@ -135,11 +123,11 @@ class Game {
 
     static render() {
         var s = 16
-        var sx = (__grid.width - 1) * -s / 2
-        var sy = (__grid.height-1)  * -s / 2
+        var sx = (__width - 1) * -s / 2
+        var sy = (__height-1)  * -s / 2
 
-        for (x in 0...__grid.width) {
-            for (y in 0...__grid.height) {
+        for (x in 0...__width) {
+            for (y in 0...__height) {
                 var v = __grid[x, y]
                 var px = sx + x * s
                 var py = sy + y * s
@@ -174,22 +162,22 @@ class Game {
     static generate() {
         __level = 5
 
-        for (x in 0...__grid.width) {
-            for (y in 0...__grid.height) {
+        for (x in 0...__width) {
+            for (y in 0...__height) {
                 __grid[x, y] = Game.floor
                 Fiber.yield(__shortBrake)
             }
-        }       
+        }
 
-        for (x in 0...__grid.width) {
+        for (x in 0...__width) {
             __grid[x, 0] = Game.wall
-            __grid[x, __grid.height-1] = Game.wall
+            __grid[x, __height-1] = Game.wall
             Fiber.yield(__shortBrake)
         }
 
-        for (y in 0...__grid.height) {
+        for (y in 0...__height) {
             __grid[0, y] = Game.wall
-            __grid[__grid.width-1, y] = Game.wall
+            __grid[__width-1, y] = Game.wall
             Fiber.yield(__shortBrake)
         }
 
@@ -294,8 +282,8 @@ class Game {
 
     static findAll(type) {
         var all = []
-        for (x in 0...__grid.width) {
-            for (y in 0...__grid.height) {
+        for (x in 0...__width) {
+            for (y in 0...__height) {
                 if(__grid[x, y] == type) {
                     all.add(Vec2.new(x, y))
                 }
