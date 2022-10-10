@@ -1,0 +1,10 @@
+{
+    "Long Brake": {
+        "type": "number",
+        "value": 0.05000000074505806
+    },
+    "Short Brake": {
+        "type": "number",
+        "value": 0.0
+    }
+}

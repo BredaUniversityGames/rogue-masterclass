@@ -1,13 +1,14 @@
 /// Logical representation of the game grid.
 class Grid {
-    construct new(width, height, val) {
+    construct new(width, height, zero) {
         _grid = []
         _width = width
         _height = height
+        _zero = zero
 
         var n = _width * _height
         for (i in 1..n) {
-            _grid.add(val)
+            _grid.add(zero)
         }
     }
 
