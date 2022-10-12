@@ -1,8 +1,11 @@
 import "xs" for Data, Input, Render     // These are the parts of the xs we will be using
-import "xs_math" for Vec2
+import "xs_math"for Math, Bits, Vec2, Color
 import "xs_assert" for Assert
+import "xs_ec"for Entity, Component
+import "xs_components" for Transform, Body, Renderable, Sprite, GridSprite, AnimatedSprite
 import "random" for Random              // Random is a part of the Wren library
 import "sparse_grid" for SpraseGrid
+import "types" for Type
 
 class Directions {
     static [i] {
@@ -32,38 +35,32 @@ class Walker {
 
 
 class State {
+    static generating   { 0 }
     static playerTurn   { 1 }
     static computerTurn { 2 }
     static idle         { 3 }
 }
 
 class Game {
-    static empty    { 0 }
-    static floor    { 1 } 
-    static wall     { 2 }
-    static player   { 3 }
-    static enemy    { 4 }
-
-    // static bomb   { 5 }
-
     static config() {
-        Data.setString("Title", "Rogue Like", Data.system)
-        Data.setNumber("Width", 180, Data.system)
-        Data.setNumber("Height", 180, Data.system)
-        Data.setNumber("Multiplier", 1, Data.system)
+        // Using a file instead
     }
 
-    static init() {
-        var gs = 11 // Grid size
 
-        __width = gs
-        __height = gs
+    static init() {
+        Entity.init()
+
+        __tileSize = Data.getNumber("Tile Size", Data.game)
+        __width = Data.getNumber("Level Width", Data.game)
+        __height = Data.getNumber("Level Height", Data.game)
 
         __level = 0                
         __random = Random.new()
-        __state = State.playerTurn
+        __state = State.generating
         __time = 0
-        __grid = SpraseGrid.new(Game.empty)
+
+        __grid = SpraseGrid.new(Type.empty)
+        __entities = SpraseGrid.new(null)
 
         __shortBrake = Data.getNumber("Short Brake")
         __longBrake = Data.getNumber("Long Brake")
@@ -113,16 +110,26 @@ class Game {
     }   
     
     static update(dt) {
+        Entity.update(dt)
+
         __time = __time - dt
         if(__time <= 0.0) {
-            if(!__genFiber.isDone) {
+            while(!__genFiber.isDone) {
                 __time = __genFiber.call()
             }
         }
+
+        /*
+        if(__state == State.playerTurn) {
+            movePlayer()
+        } else if(__state == State.computerTurn) {
+            moveEnemies()
+        }
+        */
     }
 
-    static render() {
-        var s = 16
+    static render() {      
+        var s = __tileSize  
         var sx = (__width - 1) * -s / 2
         var sy = (__height-1)  * -s / 2
 
@@ -133,14 +140,14 @@ class Game {
                 var py = sy + y * s
                 var sprite = null      
                 var color = null
-                if(v == Game.empty) {
+                if(v == Type.empty) {
                     Render.renderSprite(__emptySprite, px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
-                } else if(v == Game.wall) {
+                } else if(v == Type.wall) {
                     var pos = Vec2.new(x, y)  
                     var flag = 0
                     for(i in 0...4) {
                         var n = pos + Directions[i]
-                        if(__grid.isValidPosition(n.x, n.y) && __grid[n.x, n.y] == Game.wall) {
+                        if(__grid.isValidPosition(n.x, n.y) && __grid[n.x, n.y] == Type.wall) {
                             flag = flag | 1 << i  // |
                         }
                     }
@@ -149,14 +156,10 @@ class Game {
                     var i = (x + y) % __floorSprites.count
                     Render.renderSprite(__floorSprites[i], px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
                 }
-
-                if(v == Game.player) {
-                    Render.renderSprite(__playerSprite, px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)                                        
-                } else if(v == Game.enemy) {
-                    Render.renderSprite(__enemySprite, px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
-                }
             }
         }
+
+        Renderable.render() 
     }
 
     static generate() {
@@ -164,37 +167,40 @@ class Game {
 
         for (x in 0...__width) {
             for (y in 0...__height) {
-                __grid[x, y] = Game.floor
+                __grid[x, y] = Type.floor
                 Fiber.yield(__shortBrake)
             }
         }
 
         for (x in 0...__width) {
-            __grid[x, 0] = Game.wall
-            __grid[x, __height-1] = Game.wall
+            __grid[x, 0] = Type.wall
+            __grid[x, __height-1] = Type.wall
             Fiber.yield(__shortBrake)
         }
 
         for (y in 0...__height) {
-            __grid[0, y] = Game.wall
-            __grid[__width-1, y] = Game.wall
+            __grid[0, y] = Type.wall
+            __grid[__width-1, y] = Type.wall
             Fiber.yield(__shortBrake)
         }
 
          for(i in 0...3) {
             var x = __random.int(1, 5)
             var y = __random.int(1, 5)
-            __grid[x + 5, y + 5] = Game.wall
+            __grid[x + 5, y + 5] = Type.wall
             Fiber.yield(__longBrake)
-            __grid[x + 5, 5 - y] = Game.wall
+            __grid[x + 5, 5 - y] = Type.wall
             Fiber.yield(__longBrake)            
-            __grid[5 - x, y + 5] = Game.wall
+            __grid[5 - x, y + 5] = Type.wall
             Fiber.yield(__longBrake)
-            __grid[5 - x, 5 - y] = Game.wall
+            __grid[5 - x, 5 - y] = Type.wall
             Fiber.yield(__longBrake)
         }
 
-        __grid[5, 5] = Game.player
+        Game.createPlayer()
+
+
+        //__grid[5, 5] = Type.player
         Fiber.yield(__longBrake)
 
         for(i in 0...__level) {
@@ -202,8 +208,9 @@ class Game {
             while(!found) {
                 var x = __random.int(0, 11)
                 var y = __random.int(0, 11)
-                if(__grid.isValidPosition(x, y) && __grid[x, y] == Game.floor) {
-                    __grid[x, y] = Game.enemy
+                if(__grid.isValidPosition(x, y) && __grid[x, y] == Type.floor) {
+                    createSlime(x, y)
+                    //__grid[x, y] = Type.enemy
                     found = true
                     Fiber.yield(__longBrake)
                 }
@@ -211,20 +218,18 @@ class Game {
         }
 
         __state = State.playerTurn
-
         return 0.0
     }
 
     static moveTile(x, y, dx, dy) {
         if(__grid.isValidPosition(x + dx, y + dy)) {
             var v = __grid[x + dx, y + dy]
-            if(v != Game.wall) {
+            if(v != Type.wall) {
                 var val = __grid[x, y]
-                __grid[x, y] = Game.floor
+                __grid[x, y] = Type.floor
                 __grid[x + dx, y + dy] = val
                 __state = State.playerTurn
                 System.print("Tile moved state: %(__state)")
-                __grid.print()
                 return true
             }
         }
@@ -232,7 +237,7 @@ class Game {
     }
 
     static movePlayer() {
-        var players = findAll(Game.player)
+        var players = findAll(Type.player)
         if(players.count > 0) {
             var p = players[0]
             if(Input.getButtonOnce(Input.gamepadDPadRight) || Input.getKeyOnce(Input.keyRight)) {
@@ -245,7 +250,7 @@ class Game {
                 moveTile(p.x, p.y, 0, 1)
             }
 
-            var pn = findAll(Game.player)[0]
+            var pn = findAll(Type.player)[0]
             if(pn != p) {
                 __state = State.computerTurn
             }
@@ -265,13 +270,13 @@ class Game {
     }
 
     static moveEnemies() {
-        var enemies = findAll(Game.enemy)
+        var enemies = findAll(Type.enemy)
         if(enemies.count == 0) {
             initLevel()
             return
         }
 
-        var p = findAll(Game.player)[0]
+        var p = findAll(Type.player)[0]
         for (e in enemies) {
             var d = p - e
             d = manhattanize(d)
@@ -291,4 +296,41 @@ class Game {
         }
         return all
     }
+
+    static createPlayer() {
+        var player = Entity.new()
+        var t = Transform.new(Vec2.new(0, 0))
+        var s = AnimatedSprite.new("[game]/assets/chara_hero.png", 4, 11, 15)
+        s.addAnimation("idle", [0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2,1])
+        s.addAnimation("selected", [4,4,4,4,4,4,4,4,5,6,6,6,6,6,6,6,5])
+        s.addAnimation("walk down", [8,8,8,9,9,9,10,10,10,11,11,11])
+        s.addAnimation("walk side", [12,12,12,13,13,13,14,14,14,15,15,15])
+        s.addAnimation("walk up", [16,16,16,17,17,17,18,18,18,19,19,19])
+        s.playAnimation("walk up")        
+        s.flags = Render.spriteCenter
+        var h = Hero.new()
+        player.addComponent(t)
+        player.addComponent(s)
+        player.addComponent(h)
+        player.name = "Player"
+    }
+
+    static createSlime(x, y) {
+        var sz = 16
+        var sx = (__width - 1) * -sz / 2
+        var sy = (__height-1)  * -sz / 2
+        var px = sx + x * sz
+        var py = sy + y * sz
+        var slime = Entity.new()
+        var t = Transform.new(Vec2.new(px, py))
+        var s = AnimatedSprite.new("[game]/assets/chara_slime.png", 4, 11, 12)
+        s.addAnimation("idle", [0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2])
+        s.playAnimation("idle")
+        s.flags = Render.spriteCenter
+        slime.addComponent(t)
+        slime.addComponent(s)
+        slime.name = "Slime"        
+    }
  }
+
+ import "gameplay" for Hero, TileMove
