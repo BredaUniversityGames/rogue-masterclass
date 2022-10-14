@@ -6,20 +6,7 @@ import "xs_components" for Transform, Body, Renderable, Sprite, GridSprite, Anim
 import "random" for Random              // Random is a part of the Wren library
 import "sparse_grid" for SpraseGrid
 import "types" for Type
-
-class Directions {
-    static [i] {
-        if(i == 0) {
-            return Vec2.new(0, 1)   // Up
-        } else if(i == 1) {
-            return Vec2.new(1, 0)   // Right
-        } else if(i == 2) {
-            return Vec2.new(0, -1)   // Down
-        } else if(i == 3) {
-            return Vec2.new(-1, 0)   // Left
-        }
-    }
-}
+import "directions" for Directions
 
 class Walker {
     construct new(position, direction) {
@@ -33,7 +20,6 @@ class Walker {
     position=(p) { _position = p }
 }
 
-
 class State {
     static generating   { 0 }
     static playerTurn   { 1 }
@@ -41,57 +27,88 @@ class State {
     static idle         { 3 }
 }
 
-class Game {
-    static config() {
+class RoguealotClass {
+    construct new() {}
+
+    tileSize { _tileSize }
+
+    width { _width }
+
+    height { _height }
+
+    random { _random }
+
+    calculatePos(tile) {
+        return calculatePos(tile.x, tile.y)
+    }
+
+    calculatePos(tx, ty) {
+        var sx = (_width - 1) * -_tileSize / 2.0
+        var sy = (_height - 1)  * -_tileSize / 2.0
+        var px = sx + tx * _tileSize
+        var py = sy + ty * _tileSize
+        return Vec2.new(px, py)        
+    }
+
+    calculateTile(pos) {
+        var sx = (_width - 1.0) * -_tileSize / 2.0
+        var sy = (_height - 1.0)  * -_tileSize / 2.0
+        var tx = (pos.x - sx) / _tileSize
+        var ty = (pos.y - sy) / _tileSize
+        return Vec2.new(tx.round, ty.round)
+    }
+
+    config() {
         // Using a file instead
     }
 
-
-    static init() {
+    init() {
         Entity.init()
+        Tile.init()
 
-        __tileSize = Data.getNumber("Tile Size", Data.game)
-        __width = Data.getNumber("Level Width", Data.game)
-        __height = Data.getNumber("Level Height", Data.game)
+        _tileSize = Data.getNumber("Tile Size", Data.game)
+        _width = Data.getNumber("Level Width", Data.game)
+        _height = Data.getNumber("Level Height", Data.game)
 
-        __level = 0                
-        __random = Random.new()
-        __state = State.generating
-        __time = 0
+        _level = 0                
+        _random = Random.new()
+        _state = State.generating
+        _time = 0
 
-        __grid = SpraseGrid.new(Type.empty)
-        __entities = SpraseGrid.new(null)
+        _grid = SpraseGrid.new(Type.empty)
+        _entities = SpraseGrid.new(null)
 
-        __shortBrake = Data.getNumber("Short Brake")
-        __longBrake = Data.getNumber("Long Brake")
+        _shortBrake = Data.getNumber("Short Brake")
+        _longBrake = Data.getNumber("Long Brake")
 
         var tilesImage = Render.loadImage("[game]/assets/tiles_dungeon.png")
         var heroImage = Render.loadImage("[game]/assets/chara_hero.png")
         var slimeImage = Render.loadImage("[game]/assets/chara_slime.png")
 
-        __emptySprite = Render.createGridSprite(tilesImage, 20, 24, 3, 0)
+        _emptySprite = Render.createGridSprite(tilesImage, 20, 24, 3, 0)
 
-        __wallSprites = [
-            Render.createGridSprite(tilesImage, 20, 24, 0, 20),     // 0000
-            Render.createGridSprite(tilesImage, 20, 24, 0, 23),     // 0001
-            Render.createGridSprite(tilesImage, 20, 24, 1, 20),     // 0010
-            Render.createGridSprite(tilesImage, 20, 24, 1, 22),     // 0011
-            Render.createGridSprite(tilesImage, 20, 24, 0, 21),     // 0100
-            Render.createGridSprite(tilesImage, 20, 24, 0, 22),     // 0101
-            Render.createGridSprite(tilesImage, 20, 24, 1, 21),     // 0110
-            Render.createGridSprite(tilesImage, 20, 24, 3, 23),     // 0111
-            Render.createGridSprite(tilesImage, 20, 24, 3, 20),     // 1000
-            Render.createGridSprite(tilesImage, 20, 24, 2, 22),     // 1001    
-            Render.createGridSprite(tilesImage, 20, 24, 2, 20),     // 1010
-            Render.createGridSprite(tilesImage, 20, 24, 3, 22),     // 1011
-            Render.createGridSprite(tilesImage, 20, 24, 2, 21),     // 1100
-            Render.createGridSprite(tilesImage, 20, 24, 1, 23),     // 1101
-            Render.createGridSprite(tilesImage, 20, 24, 2, 23),     // 1110    
-            Render.createGridSprite(tilesImage, 20, 24, 3, 21)      // 1111    
+        _wallSprites = [
+            Render.createGridSprite(tilesImage, 20, 24, 0, 8),     // 0000
+            Render.createGridSprite(tilesImage, 20, 24, 0, 11),     // 0001
+            Render.createGridSprite(tilesImage, 20, 24, 1, 8),     // 0010
+            Render.createGridSprite(tilesImage, 20, 24, 1, 10),     // 0011
+            Render.createGridSprite(tilesImage, 20, 24, 0, 9),     // 0100
+            Render.createGridSprite(tilesImage, 20, 24, 0, 10),     // 0101
+            Render.createGridSprite(tilesImage, 20, 24, 1, 9),     // 0110
+            Render.createGridSprite(tilesImage, 20, 24, 3, 11),     // 0111
+            Render.createGridSprite(tilesImage, 20, 24, 3, 8),     // 1000
+            Render.createGridSprite(tilesImage, 20, 24, 2, 10),     // 1001    
+            Render.createGridSprite(tilesImage, 20, 24, 2, 8),     // 1010
+            Render.createGridSprite(tilesImage, 20, 24, 3, 10),     // 1011
+            Render.createGridSprite(tilesImage, 20, 24, 2, 9),     // 1100
+            Render.createGridSprite(tilesImage, 20, 24, 1, 11),     // 1101
+            Render.createGridSprite(tilesImage, 20, 24, 2, 11),     // 1110    
+            Render.createGridSprite(tilesImage, 20, 24, 3, 9)      // 1111    
 
         ]
 
-        __floorSprites = [
+        /*
+        _floorSprites = [
             Render.createGridSprite(tilesImage, 20, 24, 0, 0),
             Render.createGridSprite(tilesImage, 20, 24, 1, 0),
             Render.createGridSprite(tilesImage, 20, 24, 2, 0),
@@ -102,59 +119,68 @@ class Game {
             Render.createGridSprite(tilesImage, 20, 24, 1, 2),
             Render.createGridSprite(tilesImage, 20, 24, 2, 2)
         ]
+        */
 
-        __playerSprite = Render.createGridSprite(heroImage, 4, 11, 0, 0)
-        __enemySprite = Render.createGridSprite(slimeImage, 4, 11, 0, 0)
 
-        __genFiber =  Fiber.new { generate() }
+        _floorSprites = [
+            Render.createGridSprite(tilesImage, 20, 24, 14, 8),
+            Render.createGridSprite(tilesImage, 20, 24, 15, 8),
+            Render.createGridSprite(tilesImage, 20, 24, 14, 9),
+            Render.createGridSprite(tilesImage, 20, 24, 15, 9)
+        ]
+
+        _playerSprite = Render.createGridSprite(heroImage, 4, 11, 0, 0)
+        _enemySprite = Render.createGridSprite(slimeImage, 4, 11, 0, 0)
+
+        _genFiber =  Fiber.new { generate() }
     }   
     
-    static update(dt) {
+    update(dt) {
         Entity.update(dt)
 
-        __time = __time - dt
-        if(__time <= 0.0) {
-            while(!__genFiber.isDone) {
-                __time = __genFiber.call()
+        _time = _time - dt
+        if(_time <= 0.0) {
+            if(!_genFiber.isDone) {
+                _time = _genFiber.call()
             }
         }
 
         /*
-        if(__state == State.playerTurn) {
+        if(_state == State.playerTurn) {
             movePlayer()
-        } else if(__state == State.computerTurn) {
+        } else if(_state == State.computerTurn) {
             moveEnemies()
         }
         */
     }
 
-    static render() {      
-        var s = __tileSize  
-        var sx = (__width - 1) * -s / 2
-        var sy = (__height-1)  * -s / 2
+    render() {      
+        var s = _tileSize  
+        var sx = (_width - 1) * -s / 2
+        var sy = (_height-1)  * -s / 2
 
-        for (x in 0...__width) {
-            for (y in 0...__height) {
-                var v = __grid[x, y]
+        for (x in 0..._width) {
+            for (y in 0..._height) {
+                var v = _grid[x, y]
                 var px = sx + x * s
                 var py = sy + y * s
                 var sprite = null      
                 var color = null
                 if(v == Type.empty) {
-                    Render.renderSprite(__emptySprite, px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
+                    Render.renderSprite(_emptySprite, px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
                 } else if(v == Type.wall) {
                     var pos = Vec2.new(x, y)  
                     var flag = 0
                     for(i in 0...4) {
                         var n = pos + Directions[i]
-                        if(__grid.isValidPosition(n.x, n.y) && __grid[n.x, n.y] == Type.wall) {
+                        if(_grid.isValidPosition(n.x, n.y) && _grid[n.x, n.y] == Type.wall) {
                             flag = flag | 1 << i  // |
                         }
                     }
-                    Render.renderSprite(__wallSprites[flag], px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)                    
+                    Render.renderSprite(_wallSprites[flag], px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)                    
                 } else {
-                    var i = (x + y) % __floorSprites.count
-                    Render.renderSprite(__floorSprites[i], px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
+                    var i = (x + y) % _floorSprites.count
+                    Render.renderSprite(_floorSprites[i], px, py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
                 }
             }
         }
@@ -162,170 +188,75 @@ class Game {
         Renderable.render() 
     }
 
-    static generate() {
-        __level = 5
+    generate() {
+        _level = 5
 
-        for (x in 0...__width) {
-            for (y in 0...__height) {
-                __grid[x, y] = Type.floor
-                Fiber.yield(__shortBrake)
+        for (x in 0..._width) {
+            for (y in 0..._height) {
+                _grid[x, y] = Type.floor
+                Fiber.yield(_shortBrake)
             }
         }
 
-        for (x in 0...__width) {
-            __grid[x, 0] = Type.wall
-            __grid[x, __height-1] = Type.wall
-            Fiber.yield(__shortBrake)
+        for (x in 0..._width) {
+            _grid[x, 0] = Type.wall
+            _grid[x, _height-1] = Type.wall
+            Fiber.yield(_shortBrake)
         }
 
-        for (y in 0...__height) {
-            __grid[0, y] = Type.wall
-            __grid[__width-1, y] = Type.wall
-            Fiber.yield(__shortBrake)
+        for (y in 0..._height) {
+            _grid[0, y] = Type.wall
+            _grid[_width-1, y] = Type.wall
+            Fiber.yield(_shortBrake)
         }
 
          for(i in 0...3) {
-            var x = __random.int(1, 5)
-            var y = __random.int(1, 5)
-            __grid[x + 5, y + 5] = Type.wall
-            Fiber.yield(__longBrake)
-            __grid[x + 5, 5 - y] = Type.wall
-            Fiber.yield(__longBrake)            
-            __grid[5 - x, y + 5] = Type.wall
-            Fiber.yield(__longBrake)
-            __grid[5 - x, 5 - y] = Type.wall
-            Fiber.yield(__longBrake)
+            var x = _random.int(1, 5)
+            var y = _random.int(1, 5)
+            _grid[x + 5, y + 5] = Type.wall
+            Fiber.yield(_longBrake)
+            _grid[x + 5, 5 - y] = Type.wall
+            Fiber.yield(_longBrake)            
+            _grid[5 - x, y + 5] = Type.wall
+            Fiber.yield(_longBrake)
+            _grid[5 - x, 5 - y] = Type.wall
+            Fiber.yield(_longBrake)
         }
 
-        Game.createPlayer()
+        Create.hero()
+        //_grid[5, 5] = Type.player
+        Fiber.yield(_longBrake)
 
-
-        //__grid[5, 5] = Type.player
-        Fiber.yield(__longBrake)
-
-        for(i in 0...__level) {
+        for(i in 0..._level) {
             var found = false
             while(!found) {
-                var x = __random.int(0, 11)
-                var y = __random.int(0, 11)
-                if(__grid.isValidPosition(x, y) && __grid[x, y] == Type.floor) {
+                var x = _random.int(0, 11)
+                var y = _random.int(0, 11)
+                if(_grid.isValidPosition(x, y) && _grid[x, y] == Type.floor) {
                     createSlime(x, y)
-                    //__grid[x, y] = Type.enemy
+                    //_grid[x, y] = Type.enemy
                     found = true
-                    Fiber.yield(__longBrake)
+                    Fiber.yield(_longBrake)
                 }
             }
         }
 
-        __state = State.playerTurn
+        _state = State.playerTurn
         return 0.0
     }
 
-    static moveTile(x, y, dx, dy) {
-        if(__grid.isValidPosition(x + dx, y + dy)) {
-            var v = __grid[x + dx, y + dy]
-            if(v != Type.wall) {
-                var val = __grid[x, y]
-                __grid[x, y] = Type.floor
-                __grid[x + dx, y + dy] = val
-                __state = State.playerTurn
-                System.print("Tile moved state: %(__state)")
-                return true
-            }
-        }
-        return false
-    }
-
-    static movePlayer() {
-        var players = findAll(Type.player)
-        if(players.count > 0) {
-            var p = players[0]
-            if(Input.getButtonOnce(Input.gamepadDPadRight) || Input.getKeyOnce(Input.keyRight)) {
-                moveTile(p.x, p.y, 1, 0)
-            } else if(Input.getButtonOnce(Input.gamepadDPadLeft) || Input.getKeyOnce(Input.keyLeft)) {
-                moveTile(p.x, p.y, -1, 0)
-            } else if(Input.getButtonOnce(Input.gamepadDPadDown) || Input.getKeyOnce(Input.keyDown)) {
-                moveTile(p.x, p.y, 0, -1)
-            } else if(Input.getButtonOnce(Input.gamepadDPadUp) || Input.getKeyOnce(Input.keyUp)) {
-                moveTile(p.x, p.y, 0, 1)
-            }
-
-            var pn = findAll(Type.player)[0]
-            if(pn != p) {
-                __state = State.computerTurn
-            }
-        } else {
-            __level = 0
-            initLevel()
-            return
-        }
-    }
-
-    static manhattanize(dir) {
-        if(dir.x.abs > dir.y.abs) {
-            return Vec2.new(dir.x.sign, 0)
-        } else {
-            return Vec2.new(0, dir.y.sign)
-        }
-    }
-
-    static moveEnemies() {
-        var enemies = findAll(Type.enemy)
-        if(enemies.count == 0) {
-            initLevel()
-            return
-        }
-
-        var p = findAll(Type.player)[0]
-        for (e in enemies) {
-            var d = p - e
-            d = manhattanize(d)
-            moveTile(e.x, e.y, d.x, d.y)            
-        }
-        __state = State.playerTurn
-    }
-
-    static findAll(type) {
-        var all = []
-        for (x in 0...__width) {
-            for (y in 0...__height) {
-                if(__grid[x, y] == type) {
-                    all.add(Vec2.new(x, y))
-                }
-            }
-        }
-        return all
-    }
-
-    static createPlayer() {
-        var player = Entity.new()
-        var t = Transform.new(Vec2.new(0, 0))
-        var s = AnimatedSprite.new("[game]/assets/chara_hero.png", 4, 11, 15)
-        s.addAnimation("idle", [0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2,1])
-        s.addAnimation("selected", [4,4,4,4,4,4,4,4,5,6,6,6,6,6,6,6,5])
-        s.addAnimation("walk down", [8,8,8,9,9,9,10,10,10,11,11,11])
-        s.addAnimation("walk side", [12,12,12,13,13,13,14,14,14,15,15,15])
-        s.addAnimation("walk up", [16,16,16,17,17,17,18,18,18,19,19,19])
-        s.playAnimation("walk up")        
-        s.flags = Render.spriteCenter
-        var h = Hero.new()
-        player.addComponent(t)
-        player.addComponent(s)
-        player.addComponent(h)
-        player.name = "Player"
-    }
-
-    static createSlime(x, y) {
+    createSlime(x, y) {
         var sz = 16
-        var sx = (__width - 1) * -sz / 2
-        var sy = (__height-1)  * -sz / 2
+        var sx = (_width - 1) * -sz / 2
+        var sy = (_height-1)  * -sz / 2
         var px = sx + x * sz
         var py = sy + y * sz
         var slime = Entity.new()
         var t = Transform.new(Vec2.new(px, py))
-        var s = AnimatedSprite.new("[game]/assets/chara_slime.png", 4, 11, 12)
-        s.addAnimation("idle", [0,0,0,0,0,0,0,0,1,2,2,2,2,2,2,2,2])
+        var s = AnimatedSprite.new("[game]/assets/chara_slime.png", 4, 11, 15)
+        s.addAnimation("idle", [0,0,0,0,0,0,0,1,2,2,2,2,2,2,2])
         s.playAnimation("idle")
+        s.randomizeFrame(_random)
         s.flags = Render.spriteCenter
         slime.addComponent(t)
         slime.addComponent(s)
@@ -333,4 +264,8 @@ class Game {
     }
  }
 
- import "gameplay" for Hero, TileMove
+ var Game = RoguealotClass.new()
+ var Roguealot = Game
+
+import "create" for Create
+import "gameplay" for Hero, Tile

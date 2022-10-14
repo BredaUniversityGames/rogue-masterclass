@@ -1,7 +1,7 @@
 {
     "Height": {
         "type": "number",
-        "value": 180
+        "value": 180.0
     },
     "Multiplier": {
         "type": "number",
@@ -13,6 +13,6 @@
     },
     "Width": {
         "type": "number",
-        "value": 320
+        "value": 320.0
     }
 }

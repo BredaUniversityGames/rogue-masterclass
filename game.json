@@ -11,6 +11,14 @@
         "type": "number",
         "value": 0.05000000074505806
     },
+    "Move Speed": {
+        "type": "number",
+        "value": 0.0
+    },
+    "Move Time": {
+        "type": "number",
+        "value": 0.30000001192092896
+    },
     "Short Brake": {
         "type": "number",
         "value": 0.0
