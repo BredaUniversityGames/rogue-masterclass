@@ -22,7 +22,8 @@ class SpraseGrid {
         if(val != null) {
             return val
         }
-        return _zero
+        _grid[id] = _zero.type.new()
+        return _grid[id] //_zero.type.new()
     }
 
     /// Assigns a given value to a given grid cell.    
