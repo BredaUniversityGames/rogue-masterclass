@@ -12,6 +12,7 @@ class Type {
     static pot      { 1 << 9 }
     static stairs   { 1 << 10 }
 
-    static attackable   { enemy }
-    static blocking     { (wall | enemy | door) }
+//    static attackable   { enemy }
+    static blocking     { (wall | enemy | door | player) }
+//    static character    { (player | enemy) }
 }

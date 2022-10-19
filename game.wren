@@ -20,14 +20,12 @@ class Walker {
     position=(p) { _position = p }
 }
 
-class State {
-    static generating   { 0 }
-    static playerTurn   { 1 }
-    static computerTurn { 2 }
-    static idle         { 3 }
-}
-
 class Game {
+    static loading      { 0 }
+    static generating   { 1 }
+    static starting     { 2 }
+    static playing      { 3 }
+    static gameover     { 4 }
 
     static config() { /* Using a file instead */ }
 
@@ -36,41 +34,58 @@ class Game {
         Level.init()
         Tile.init()
         Create.init()
-
-        __level = 0                
-        __state = State.generating
-        __time = 0
-
+        Gameplay.init()
+        
+        __time = 0        
+        __state = generating // Skip loading
         var alg = Randy
         __genFiber =  Fiber.new { alg.generate() }
     }   
     
-    static update(dt) {
-        Entity.update(dt)
-
-
-        __time = __time - dt
-        if(__time <= 0.0) {
-            if(!__genFiber.isDone) {
-                __time = __genFiber.call()
+    static update(dt) {  
+        Gameplay.debugRender()
+        if(__state == Game.generating) {
+            genStep(dt)            
+        } else if(__state == Game.starting ) {            
+            if(Gameplay.ready) {
+                __state = Game.playing                
+            } else {
+                Gameplay.start()
             }
+        } else if(__state == Game.playing) {
+            Gameplay.update(dt)
         }
 
-        /*
-        if(__state == State.playerTurn) {
-            movePlayer()
-        } else if(__state == State.computerTurn) {
-            moveEnemies()
+        Entity.update(dt)        
+    }
+
+    static genStep(dt) {
+        var visualize = Data.getBool("Visualize Generation", Data.debug)
+        if(visualize) {
+            __time = __time - dt
+            if(__time <= 0.0) {
+                if(!__genFiber.isDone) {
+                    __time = __genFiber.call()
+                } else {
+                    __state = Game.starting
+                    // Gameplay.start()
+                }
+            }
+        } else {
+            while(!__genFiber.isDone) {
+                __genFiber.call()
+            } 
+            __state = starting
+            // Gameplay.start()
         }
-        */
     }
 
     static render() {
         Level.render()
-        Renderable.render() 
+        Renderable.render()        
     }
  }
 
 import "create" for Create
 import "generators" for Randy
-import "gameplay" for Hero, Tile
+import "gameplay" for Hero, Tile, Gameplay
