@@ -40,7 +40,6 @@ class Level {
             Render.createGridSprite(tilesImage, 20, 24, 1, 11),     // 1101
             Render.createGridSprite(tilesImage, 20, 24, 2, 11),     // 1110
             Render.createGridSprite(tilesImage, 20, 24, 3, 9)       // 1111
-
         ]
 
         __floorSprites = [
@@ -49,10 +48,6 @@ class Level {
             Render.createGridSprite(tilesImage, 20, 24, 14, 9),
             Render.createGridSprite(tilesImage, 20, 24, 15, 9)
         ]
-
-        __playerSprite = Render.createGridSprite(heroImage, 4, 11, 0, 0)
-        __enemySprite = Render.createGridSprite(slimeImage, 4, 11, 0, 0)
-
     }
 
     static calculatePos(tile) {
@@ -184,15 +179,14 @@ class Tile is Component {
     
     x { _x }
     y { _y }
-    //isDone { _x == _toX &&  _y == _toY }
     moving { _x != _toX ||  _y != _toY }
 }
 
 
 class Character is Component {
     static idle         { 0 }
-    static active       { 1 }
-    static walking      { 2 }
+    static selected     { 1 }
+    static moving       { 2 }
     static attacking    { 3 }
     static pain         { 4 }
 
@@ -200,76 +194,46 @@ class Character is Component {
         _attackable = attackable
         _state = Character.idle
         _direction = Directions.downIdx
-
         _flags = [  Render.spriteCenter,
                     Render.spriteCenter,
                     Render.spriteCenter,
                     Render.spriteCenter | Render.spriteFlipX] 
         _anims = [  "up" , "side", "down", "side"]
+        __stateNames = ["W", "S", "M", "A", "P"]
     }
 
-    update() {
-        var s = owner.getComponent(AnimatedSprite)
-        var tl = owner.getComponent(Tile)
-        /*
-        if(_state == Character.walking) {
-            if(!tl.moving) {
-                _state = Character.idle
-                s.playAnimation("idle")
-                s.mode = AnimatedSprite.loop
-            }
-        } else if(_state == Character.attacking || _state == Character.pain) {
-            if(s.isDone) {
-                _state = Character.idle
-                s.playAnimation("idle")
-                s.mode = AnimatedSprite.loop
-            }
-        } else */ if(_state == Character.active) {
-            for(dir in 0...4) {                                                              
-                if(shouldMove(dir)) {                    
-                    _direction = Directions[dir]
-                    s.flags = _flags[dir]
-                    if(checkTile(dir, _attackable)) {
-                        attackTile(dir)
-                        s.playAnimation("attack " + _anims[dir])
-                        s.mode = AnimatedSprite.once
-                        __state = Character.attacking
-                    } else if(!checkTile(dir, Type.blocking)) {
-                        moveTile(dir)
-                        s.playAnimation("walk " + _anims[dir])
-                        s.mode = AnimatedSprite.once
-                        __state = Character.walking
-                    }
-                }    
-            }     
-        }
+    initialize() {
+        _anim = owner.getComponent(AnimatedSprite)
+        _tile = owner.getComponent(Tile)
+    }
 
-        
-        //System.print("s.isDone: %(s.isDone) s.mode:%(s.mode) tl.moving:%(tl.moving)")
-        if((__state == Character.attacking || __state == Character.walking || __state == Character.pain) &&
-            s.isDone && !tl.moving) {
+    update(dt) {
+        //System.print("For %(owner.name) from state:%(__stateNames[_state]) going to idle")
+        //System.print("_anim.isDone: %(_anim.isDone) _tile.moving: %(_tile.moving))")
+
+        // This is the same as having a character controller where after every action/animation it goes to idle
+        if((_state == Character.attacking || _state == Character.moving || _state == Character.pain) &&
+            _anim.isDone && !_tile.moving) {
             _state = Character.idle
-            s.playAnimation("idle")
-            s.mode = AnimatedSprite.loop
+            _anim.playAnimation("idle")
+            _anim.mode = AnimatedSprite.loop
         }
-    }
 
-    update(dt) {          
         if(Data.getBool("Debug Draw", Data.debug)) {
-            var tl = owner.getComponent(Tile)
-            var pos = Level.calculatePos(tl)
+            var pos = Level.calculatePos(_tile)
             Render.setColor(1, 1, 1, 1)
-            Render.text("s:%(_state)", pos.x - 7, pos.y, 1)
+            var state = __stateNames[_state]
+            Render.text("%(owner.name)", pos.x - 7, pos.y + 7, 1)
+            Render.text("%(state)", pos.x - 7, pos.y, 1)
         }
     }
 
-    shouldMove(dir) { false } // Implement this one
+    turn() { true }  // Implement turn logic here one and return true when done
 
     checkTile(dir, type) {
         var d = Directions[dir]
-        var tl = owner.getComponent(Tile)
-        var x = tl.x + d.x
-        var y = tl.y + d.y
+        var x = _tile.x + d.x
+        var y = _tile.y + d.y
         var flag = Level[x, y]
         for(t in Tile.get(x, y)) {
             // System.print("tile=[%(t.x), %(t.y)] name=%(t.owner.name) tag=%(t.owner.tag) )")    
@@ -280,39 +244,47 @@ class Character is Component {
     }
 
     moveTile(dir) {
+        System.print("Moving from position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         var d = Directions[dir]
-        _state = Character.walking
-        var tl = owner.getComponent(Tile)
-        tl.move(d.x, d.y, 0.3)
-        // Gameplay.step()
+        _tile.move(d.x, d.y, 0.3) //TODO: Take this from Data
+        _anim.playAnimation("walk " + _anims[dir])
+        _anim.mode = AnimatedSprite.once
+        _state = Character.moving
     }
 
     attackTile(dir) {
-        var tl = owner.getComponent(Tile)
+        System.print("Attacking from position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         _state = Character.attacking
+        _anim.playAnimation("attack " + _anims[dir])
+        _anim.mode = AnimatedSprite.once
         var d = Directions[dir]
-        var x = tl.x + d.x
-        var y = tl.y + d.y
+        var x = _tile.x + d.x
+        var y = _tile.y + d.y
         for(t in Tile.get(x, y)) {
-            if(Bits.checkBitFlagOverlap(Type.player, t.owner.tag)) {
+            if(Bits.checkBitFlagOverlap(_attackable, t.owner.tag)) {
                 var c = t.owner.getComponentSuper(Character)
                 c.recieveAttack(dir)
             }
         }
-        // Gameplay.step()
     }
 
     recieveAttack(dir) {        
-        var s = owner.getComponent(AnimatedSprite)
+        System.print("Getting pain position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         dir = (dir + 2) % 4
-        s.playAnimation("pain " + _anims[dir])
-        s.mode = AnimatedSprite.once
-        s.flags = _flags[dir]
+        _anim.playAnimation("pain " + _anims[dir])
+        _anim.mode = AnimatedSprite.once
+        _anim.flags = _flags[dir]
         _state = Character.pain
+    }
+
+    select() {
+        System.print("Select %(owner.name)")
+        _state = Character.selected
     }
 
     state { _state }
     state=(v) { _state = v}
+    tile { _tile }
 }
 
 class Hero is Character {    
@@ -328,42 +300,77 @@ class Hero is Character {
                     Input.keyLeft]
     }
 
-    shouldMove(dir) {      
-        // System.print("shouldMove")  
-        return Input.getButtonOnce(_buttons[dir]) || Input.getKeyOnce(_keys[dir])
+    turn() {        
+        if(state == Character.selected) {
+            var dir = getDirection()
+            if(dir >= 0) {
+                _direction = Directions[dir]
+                if(checkTile(dir, Type.enemy)) {
+                    attackTile(dir)
+                } else if(!checkTile(dir, Type.blocking)) {
+                    moveTile(dir)
+                }
+            }    
+        } else if (state == Character.idle) {
+            return true   
+        }
+        return false
+    }
+
+    getDirection() {
+        for(dir in 0...4) {
+            if(Input.getButtonOnce(_buttons[dir]) || Input.getKeyOnce(_keys[dir])) {
+                return dir
+            }
+        }
+        return -1
     }
  }
 
  class Slime is Character {
     construct new() {
-        super(Type.player)
-        _buttons = [Input.gamepadDPadUp,
-                    Input.gamepadDPadRight,
-                    Input.gamepadDPadDown,
-                    Input.gamepadDPadLeft ]
-        _keys = [   Input.keyUp,
-                    Input.keyRight,
-                    Input.keyDown,
-                    Input.keyLeft]            
+        super(Type.player)         
     }
 
-    shouldMove(dir) {
-        var ownTile = owner.getComponent(Tile)
-        var playerTile = Gameplay.player.getComponent(Tile)
-        var d = Directions[dir]
-        var currentPos = Vec2.new(ownTile.x, ownTile.y)    
-        var movePos = currentPos + d
-        var playerPos = Vec2.new(playerTile.x, playerTile.y)
-        var flag = Level[movePos.x, movePos.y]
-        //for(t in Tile.get(movePos.x, movePos.y)) {
-        //    flag = (flag | t.owner.tag) // |
-        //}
-        var val =   Vec2.distance(movePos, playerPos) < Vec2.distance(currentPos, playerPos) &&
-                    Bits.checkBitFlagOverlap(flag, Type.floor | Type.player) // |                    
-        if(!val) {
-            state = Character.idle
-        }        
-        return val
+    turn() {
+        if(state == Character.selected) {
+            var dir = getDirection()                                                         
+            if(dir >= 0) {
+                    _direction = Directions[dir]
+                if(checkTile(dir, Type.enemy)) {
+                    attackTile(dir)
+                } else if(!checkTile(dir, Type.blocking)) {
+                    moveTile(dir)
+                }
+            } else {
+                System.print("Slime %(owner.name) is going to idle")
+                state = Character.idle
+                return true
+            }
+        } else if (state == Character.idle) {
+            return true   
+        }
+        return false
+    }
+
+    getDirection() {
+        System.print("getting Direction for %(owner.name)")
+        for(dir in 0...4) {        
+            var currentPos = Vec2.new(tile.x, tile.y)
+            // var playerPos = Vec2.new(playerTile.x, playerTile.y)
+            var d = Directions[dir]
+            var movePos = currentPos + d
+            var flag = Level[movePos.x, movePos.y]
+            for(t in Tile.get(movePos.x, movePos.y)) {
+                flag = flag | t.owner.tag // |
+            }
+            if(flag == Type.floor) {
+                System.print("getDirection for %(owner.name) is %(dir)")
+                return dir
+            }            
+        }
+        System.print("getDirection for %(owner.name) is -1")
+        return -1
     }
  }
 
@@ -376,29 +383,35 @@ class Hero is Character {
         __state = generating
         __queue = []
         __player = null
+        __current = null
     }    
 
     static update(dt) {
-        if(__state == Gameplay.generating) {            
-            return
-        }        
-
-        // Process entity queue
-        if(__queue.count != 0) {
-            var e = __queue[0]
-            var c = e.getComponentSuper(Character)
-            c.update()
-            if(c.state == Character.idle) {
-                __queue.removeAt(0)
-                if(__queue.count != 0) {
-                    e = __queue[0]
-                    c = e.getComponentSuper(Character)
-                    c.state = Character.active // Consider activate
-                }
-            }
+        if(__current == null) {
+            System.print("no current, trying to pop")
+            __current = pop()
+            System.print("current%(__current.name)")
         } else {
-            step()
+            if(__current.getComponentSuper(Character).turn()) {
+                System.print("Popin")
+                __current = pop()
+            }
+            if(__current == null) {
+                System.print("End of queue. Step")
+                step()
+            }
         }
+    }
+
+    static pop() {
+        if(__queue.count > 0) {
+            var first = __queue[0]
+            __queue.removeAt(0)
+            var c = first.getComponentSuper(Character)
+            c.select()
+            return first
+        }
+        return null
     }
 
     static start() {        
@@ -407,7 +420,7 @@ class Hero is Character {
             System.print("start")
             __player = pls[0]            
             var c = pls[0].getComponentSuper(Character)
-            c.state = Character.active
+            // c.select()
             __queue.addAll(pls)
             __state = playerTurn
         }
@@ -418,7 +431,10 @@ class Hero is Character {
         if(__queue.count == 0) {
             if(__state == Gameplay.playerTurn) {
                 System.print("step player")
-                __queue.addAll(Entity.entitiesWithTag(Type.enemy))
+                //__queue.addAll(Entity.entitiesWithTag(Type.enemy))
+                __queue.add(player)
+                __queue.add(player)
+                __queue.add(player)
                 __state = Gameplay.computerTurn
             } else if(__state == Gameplay.computerTurn) {
                 System.print("step computer")
@@ -428,9 +444,7 @@ class Hero is Character {
         }
     }
 
-    static ready {
-        return __queue.count != 0
-    }
+    static ready { __queue.count != 0 }
 
     static player { __player }
 
@@ -450,22 +464,23 @@ class Hero is Character {
                 var py = sy + y * s
                 var color = null
                 if (v == Type.empty) {
-                    Render.setColor(0x111111FF)  
+                    Render.setColor(0x1111118F)  
                 } else if (v == Type.wall) {
-                    Render.setColor(0xFF3333FF)
+                    Render.setColor(0x8383038F)
                 } else {
-                    Render.setColor(0x333333FF)
+                    Render.setColor(0x3333338F)
                 }
-                Render.circle(px, py, 3.0, 12)
+                
+                Render.circle(px, py, 8, 32)
 
                 for (t in Tile.get(x, y)) {
                     var tag = t.owner.tag
                     if (tag == Type.enemy) {
-                        Render.setColor(0x1111FFFF)  
+                        Render.setColor(0x1111FF8F)  
                     } else if (tag == Type.player) {
-                        Render.setColor(0x11FF33FF)
+                        Render.setColor(0x11FF338F)
                     } else {
-                        Render.setColor(0x333333FF)
+                        Render.setColor(0x3333338F)
                     }
                     Render.disk(px, py, 2.0, 9)
                     px = px + 2

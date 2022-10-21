@@ -1,4 +1,5 @@
 import "xs" for Data, Input, Render
+import "xs_math" for Vec2
 import "gameplay" for Level, Tile
 import "types" for Type
 import "directions" for Directions
@@ -48,22 +49,80 @@ class Randy {
             Fiber.yield(longBrake)
         }
 
+        var fire = true
+        for (x in 1...hw) {
+            for (y in 1...hh) {
+                var px = x + hw
+                var py = y + hh
+                if(Level[px, py] == Type.wall) {
+                    var count = 0                    
+                    for (i in -1..1) {
+                        for (j in -1..1) {
+                            if(Level[px+i, py+j] == Type.wall) {
+                                count = count + 1
+                            }                            
+                        }
+                    }
+                    if(count == 1) {
+                        Level[x + hw, y + hh] = Type.floor
+                        Create.pillar(x + hw, y + hh, fire)
+                        Fiber.yield(shortBrake)
+
+                        Level[x + hw, hh - y] = Type.floor
+                        Create.pillar(x + hw, hh - y, fire)
+                        Fiber.yield(shortBrake)            
+
+                        Level[hw - x, y + hh] = Type.floor
+                        Create.pillar(hw - x, y + hh, fire)
+                        Fiber.yield(shortBrake)
+
+                        Level[hw - x, hh - y] = Type.floor
+                        Create.pillar(hw - x, hh - y, fire)
+                        Fiber.yield(shortBrake)
+
+                        fire = false
+                    }
+                }                
+            }            
+        }
+
+        for(i in 0...5) {
+            var pos = findFree(random)
+            Create.something(pos.x, pos.y)
+            Fiber.yield(shortBrake)
+        }
+
         Create.hero(hw, hh)
-        Fiber.yield(longBrake)
+        Fiber.yield(shortBrake)
+
+        Create.door(hw, Level.height - 1, false)
+        Level[hw, Level.height - 1] = Type.floor
+        Fiber.yield(shortBrake)
+
+        Create.door(0, hh, true)
+        Level[0, hh] = Type.floor
+        Fiber.yield(shortBrake)
+
+        Create.door(Level.width - 1, hh, true)
+        Level[Level.width - 1, hh] = Type.floor
+        Fiber.yield(shortBrake)
 
         for(i in 0...level) {
-            var found = false
-            while(!found) {
-                var x = random.int(0, width)
-                var y = random.int(0, height)
-                if(Level.isValidPosition(x, y) && Level[x, y] == Type.floor) {
-                    Create.slime(x, y)
-                    found = true
-                    Fiber.yield(longBrake)
-                }
-            }
+            var pos = findFree(random)
+            Create.slime(pos.x, pos.y)
+            Fiber.yield(longBrake)
         }
         return 0.0
+    }
+
+    static findFree(random) {        
+        for(i in 1...100) {
+            var x = random.int(1, Level.width - 1)
+            var y = random.int(1, Level.height - 1)
+            if(Level.isValidPosition(x, y) && Level[x, y] == Type.floor && Tile.get(x,y).count == 0) {
+                return Vec2.new(x,y)
+            }
+        }
     }
 }
 

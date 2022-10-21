@@ -9,7 +9,7 @@
     },
     "Long Brake": {
         "type": "number",
-        "value": 0.05000000074505806
+        "value": 0.0
     },
     "Move Speed": {
         "type": "number",
