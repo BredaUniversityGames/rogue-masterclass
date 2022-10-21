@@ -4,4 +4,4 @@ All the files needed to join The Rogue Masterclass at Breda University of Applie
 
 Uses the xs game engine https://bredauniversitygames.github.io/xs/ https://xs-engine.itch.io/xs
 
-Amazing rt assets by @pita_akm (If you want to use them outside this master class, purchase a license at https://pita.itch.io/)
+Amazing art assets by @pita_akm (If you want to use them outside this master class, purchase a license at https://pita.itch.io/)
