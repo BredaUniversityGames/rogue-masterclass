@@ -8,18 +8,6 @@ import "types" for Type
 import "directions" for Directions
 import "gameplay" for Level
 
-class Walker {
-    construct new(position, direction) {
-        _position = position
-        _direction = direction
-    }
-
-    direction { _direction }
-    direction=(d) { _direction = d }
-    position { _position }
-    position=(p) { _position = p }
-}
-
 class Game {
     static loading      { 0 }
     static generating   { 1 }
@@ -38,7 +26,7 @@ class Game {
         
         __time = 0        
         __state = generating // Skip loading
-        var alg = Randy
+        var alg = BSPer
         __genFiber =  Fiber.new { alg.generate() }
     }   
     
@@ -87,5 +75,5 @@ class Game {
  }
 
 import "create" for Create
-import "generators" for Randy
+import "generators" for Randy, BSPer
 import "gameplay" for Hero, Tile, Gameplay
