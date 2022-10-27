@@ -15,12 +15,12 @@ class Create {
     static character(x, y, image) {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
-        var s = AnimatedSprite.new(image, 4, 11, 15) // Same image for all
+        var s = AnimatedSprite.new(image, 4, 11, 30) // Same image for all
         var tl = Tile.new(x, y)
         var f = 0
-        s.addAnimation("idle",          [f,f,f,f,f,f,f,f,f+1,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+1])
+        s.addAnimation("idle",          [f,f,f,f,f,f,f,f,f+1,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+1,f+1,f+1])
         f = f + 4
-        s.addAnimation("selected",      [f,f,f,f,f,f,f,f,f+1,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+1])
+        s.addAnimation("selected",      [f,f,f,f,f,f,f,f,f+1,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+1,f+1,f+1])
         f = f + 4
         s.addAnimation("walk down",     [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
         f = f + 4

@@ -70,11 +70,10 @@ class Level {
         return Vec2.new(tx.round, ty.round)
     }
 
-    static render() {        
+    static render() {
         var s = __tileSize  
         var sx = (__width - 1) * -s / 2
         var sy = (__height-1)  * -s / 2
-
         for (x in 0...__width) {
             for (y in 0...__height) {
                 var v = __grid[x, y]
@@ -153,8 +152,7 @@ class Tile is Component {
         if(moving) {
             _t = _t + dt * _invT 
             var tr = owner.getComponent(Transform)            
-            if(_t >= 1) {
-                Tile.move(_x, _y, _toX, _toY, this)
+            if(_t >= 1) {               
                 _t = 0
                 _x = _toX
                 _y = _toY
@@ -168,9 +166,12 @@ class Tile is Component {
     }
 
     move(dx, dy, time) {
-        _toX = _x + dx
-        _toY = _y + dy
-        _invT = 1 / time
+        if(!moving) {
+            _toX = _x + dx
+            _toY = _y + dy
+            _invT = 1 / time
+            Tile.move(_x, _y, _toX, _toY, this)
+        }
     }
 
     finalize() {
@@ -248,6 +249,7 @@ class Character is Component {
         var d = Directions[dir]
         _tile.move(d.x, d.y, 0.3) //TODO: Take this from Data
         _anim.playAnimation("walk " + _anims[dir])
+        _anim.flags = _flags[dir]
         _anim.mode = AnimatedSprite.once
         _state = Character.moving
     }
@@ -256,6 +258,7 @@ class Character is Component {
         System.print("Attacking from position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         _state = Character.attacking
         _anim.playAnimation("attack " + _anims[dir])
+        _anim.flags = _flags[dir]
         _anim.mode = AnimatedSprite.once
         var d = Directions[dir]
         var x = _tile.x + d.x
@@ -278,7 +281,7 @@ class Character is Component {
     }
 
     select() {
-        System.print("Select %(owner.name)")
+        //System.print("Select %(owner.name)")
         _state = Character.selected
     }
 
@@ -325,6 +328,32 @@ class Hero is Character {
         }
         return -1
     }
+
+    static turn() {
+        var hero = Hero.hero.getComponent(Hero)
+        hero.select()
+        while(true && Hero.hero != null) {    
+            if(hero.state == Character.idle) {
+                //hero.select()
+            }
+            if(hero.turn()) {
+                return
+            }
+            Fiber.yield()
+        }
+    }
+
+    static hero {
+        if(__hero != null) {
+            return __hero
+        }
+        var pls = Entity.entitiesWithTag(Type.player)
+        if(pls.count == 1) {
+            __hero = pls[0]            
+        }
+        return __hero
+    }
+
  }
 
  class Slime is Character {
@@ -372,6 +401,21 @@ class Hero is Character {
         System.print("getDirection for %(owner.name) is -1")
         return -1
     }
+
+    static turn() {
+        // TODO: Generate flood fill
+        var enemies = Entity.entitiesWithTag(Type.enemy)
+        for(e in enemies) {
+            var s = e.getComponent(Slime)
+            s.select()
+            s.turn()
+            Fiber.yield()
+            Fiber.yield()
+            Fiber.yield()
+            Fiber.yield()
+            Fiber.yield()
+        }
+    }
  }
 
  class Gameplay {
@@ -380,73 +424,23 @@ class Hero is Character {
     static computerTurn { 2 }
 
     static init() {
-        __state = generating
-        __queue = []
-        __player = null
-        __current = null
+        __turn = computerTurn
+        __turnFiber = Fiber.new { }
     }    
 
     static update(dt) {
-        if(__current == null) {
-            System.print("no current, trying to pop")
-            __current = pop()
-            System.print("current%(__current.name)")
-        } else {
-            if(__current.getComponentSuper(Character).turn()) {
-                System.print("Popin")
-                __current = pop()
-            }
-            if(__current == null) {
-                System.print("End of queue. Step")
-                step()
-            }
-        }
-    }
-
-    static pop() {
-        if(__queue.count > 0) {
-            var first = __queue[0]
-            __queue.removeAt(0)
-            var c = first.getComponentSuper(Character)
-            c.select()
-            return first
-        }
-        return null
-    }
-
-    static start() {        
-        var pls = Entity.entitiesWithTag(Type.player)
-        if(pls.count == 1) {
-            System.print("start")
-            __player = pls[0]            
-            var c = pls[0].getComponentSuper(Character)
-            // c.select()
-            __queue.addAll(pls)
-            __state = playerTurn
-        }
-    }
-
-    static step() {
-        System.print("step queue.count:%(__queue.count)")
-        if(__queue.count == 0) {
-            if(__state == Gameplay.playerTurn) {
-                System.print("step player")
-                //__queue.addAll(Entity.entitiesWithTag(Type.enemy))
-                __queue.add(player)
-                __queue.add(player)
-                __queue.add(player)
-                __state = Gameplay.computerTurn
-            } else if(__state == Gameplay.computerTurn) {
-                System.print("step computer")
-                __queue.addAll(Entity.entitiesWithTag(Type.player))
-                __state = Gameplay.playerTurn
+        if(__turnFiber.isDone) {
+            if(__turn == playerTurn) {
+                __turn = computerTurn
+                __turnFiber = Fiber.new { Slime.turn() }
+            } else if(__turn == computerTurn) {
+                __turn = playerTurn
+                __turnFiber = Fiber.new { Hero.turn() }
             }    
+        } else {
+            __turnFiber.call()
         }
     }
-
-    static ready { __queue.count != 0 }
-
-    static player { __player }
 
     static debugRender() {
         var dbg = Data.getBool("Debug Draw", Data.debug)

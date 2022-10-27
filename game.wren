@@ -26,21 +26,15 @@ class Game {
         
         __time = 0        
         __state = generating // Skip loading
-        var alg = BSPer
+        var alg = Randy
         __genFiber =  Fiber.new { alg.generate() }
     }   
     
     static update(dt) {  
         Gameplay.debugRender()
         if(__state == Game.generating) {
-            genStep(dt)            
-        } else if(__state == Game.starting ) {            
-            if(Gameplay.ready) {
-                __state = Game.playing                
-            } else {
-                Gameplay.start()
-            }
-        } else if(__state == Game.playing) {
+            genStep(dt)
+        } else {
             Gameplay.update(dt)
         }
 
@@ -55,16 +49,14 @@ class Game {
                 if(!__genFiber.isDone) {
                     __time = __genFiber.call()
                 } else {
-                    __state = Game.starting
-                    // Gameplay.start()
+                    __state = Game.playing
                 }
             }
         } else {
             while(!__genFiber.isDone) {
                 __genFiber.call()
             } 
-            __state = starting
-            // Gameplay.start()
+            __state = playing
         }
     }
 
