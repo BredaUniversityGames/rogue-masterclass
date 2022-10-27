@@ -113,14 +113,17 @@ class Create {
             var entity = Entity.new()
             var pos = Level.calculatePos(x, y) + Vec2.new(0, Level.tileSize / 2)
             var t = Transform.new(pos)
+            var tl = Tile.new(x, y)
             var s = AnimatedSprite.new("[game]/assets/tiles_dungeon.png", 20, 12, 15)
             s.addAnimation("burn", [180, 181, 182, 183])
             s.playAnimation("burn")
             s.mode = AnimatedSprite.loop
             s.flags = Render.spriteCenter
             entity.addComponent(t)
+            entity.addComponent(tl)
             entity.addComponent(s)        
             entity.name = "F%(nextID)"
+            entity.tag = Type.light
         }
     }
 
