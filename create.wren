@@ -114,6 +114,7 @@ class Create {
             var pos = Level.calculatePos(x, y) + Vec2.new(0, Level.tileSize / 2)
             var t = Transform.new(pos)
             var tl = Tile.new(x, y)
+            tl.z = 0.1
             var s = AnimatedSprite.new("[game]/assets/tiles_dungeon.png", 20, 12, 15)
             s.addAnimation("burn", [180, 181, 182, 183])
             s.playAnimation("burn")

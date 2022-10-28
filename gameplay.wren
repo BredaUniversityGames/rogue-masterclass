@@ -74,7 +74,7 @@ class Level {
     static lightUp() {
         for (x in 0...__width) {
             for (y in 0...__height) {
-                __light[x, y] = 32
+                __light[x, y] = 64
             }
         }
 
@@ -106,7 +106,7 @@ class Level {
                 var lv = __light[x, y]
                 var color = Color.new(lv, lv, lv, 255)
                 if(v == Type.empty) {
-                    Render.renderSprite(__emptySprite, px, py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)
+                    Render.sprite(__emptySprite, px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)
                 } else if(v == Type.wall) {
                     var pos = Vec2.new(x, y)  
                     var flag = 0
@@ -116,10 +116,10 @@ class Level {
                             flag = flag | 1 << i  // |
                         }
                     }
-                    Render.renderSprite(__wallSprites[flag], px, py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)                    
+                    Render.sprite(__wallSprites[flag], px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)                    
                 } else {
                     var i = (x + y) % __floorSprites.count
-                    Render.renderSprite(__floorSprites[i], px, py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)
+                    Render.sprite(__floorSprites[i], px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)
                 }
             }
         }
@@ -173,6 +173,7 @@ class Tile is Component {
     construct new(x, y) {
         _x = x
         _y = y
+        _z = 0
         _toX = x
         _toY = y
         _t = 0
@@ -180,9 +181,10 @@ class Tile is Component {
     }
 
     update(dt) {
+        var tr = owner.getComponent(Transform)
+
         if(moving) {
             _t = _t + dt * _invT 
-            var tr = owner.getComponent(Transform)            
             if(_t >= 1) {               
                 _t = 0
                 _x = _toX
@@ -199,6 +201,7 @@ class Tile is Component {
         if(s != null) {
             var l = Level.getLight(x, y)
             s.mul = Color.new(l,l,l, 255).toNum
+            s.layer = -tr.position.y + 1000 + _z
         }
     }
 
@@ -217,6 +220,8 @@ class Tile is Component {
     
     x { _x }
     y { _y }
+    z { _z }
+    z=(v) { _z = v }
     moving { _x != _toX ||  _y != _toY }
 }
 
