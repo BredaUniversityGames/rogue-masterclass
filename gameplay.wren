@@ -74,11 +74,11 @@ class Level {
     static lightUp() {
         for (x in 0...__width) {
             for (y in 0...__height) {
-                __light[x, y] = 64
+                __light[x, y] = 255
             }
         }
 
-        var lights = Entity.entitiesWithTag(Type.player | Type.light)
+        var lights = Entity.withTagOverlap(Type.player | Type.light)
         for(l in lights) {
             var t  = l.getComponent(Tile)
             for(x in (t.x-3)..(t.x+3)) {
@@ -133,7 +133,7 @@ class Level {
 
     static random { __random }
 
-    static isValidPosition(x, y) { __grid.isValidPosition(x, y) }    
+    static contains(x, y) { __grid.isValidPosition(x, y) }    
 
     static [x, y] { __grid[x, y] }
 
@@ -168,7 +168,12 @@ class Tile is Component {
         add(tx, ty, tile)
     }
 
-    static get(x, y) { __tiles[x, y] }
+    static get(x, y) {
+        if(__tiles.has(x, y)) {
+            return __tiles[x, y]
+        }
+        return []
+    }
 
     construct new(x, y) {
         _x = x
@@ -251,9 +256,6 @@ class Character is Component {
     }
 
     update(dt) {
-        //System.print("For %(owner.name) from state:%(__stateNames[_state]) going to idle")
-        //System.print("_anim.isDone: %(_anim.isDone) _tile.moving: %(_tile.moving))")
-
         // This is the same as having a character controller where after every action/animation it goes to idle
         if((_state == Character.attacking || _state == Character.moving || _state == Character.pain) &&
             _anim.isDone && !_tile.moving) {
@@ -266,8 +268,8 @@ class Character is Component {
             var pos = Level.calculatePos(_tile)
             Render.setColor(1, 1, 1, 1)
             var state = __stateNames[_state]
-            Render.text("%(owner.name)", pos.x - 7, pos.y + 7, 1)
-            Render.text("%(state)", pos.x - 7, pos.y, 1)
+            Render.shapeText("%(owner.name)", pos.x - 7, pos.y + 7, 1)
+            Render.shapeText("%(state)", pos.x - 7, pos.y, 1)
         }
     }
 
@@ -306,7 +308,7 @@ class Character is Component {
         var x = _tile.x + d.x
         var y = _tile.y + d.y
         for(t in Tile.get(x, y)) {
-            if(Bits.checkBitFlagOverlap(_attackable, t.owner.tag)) {
+            if(Bits.checkBitFlag(_attackable, t.owner.tag)) {
                 var c = t.owner.getComponentSuper(Character)
                 c.recieveAttack(dir)
             }
@@ -389,13 +391,55 @@ class Hero is Character {
         if(__hero != null) {
             return __hero
         }
-        var pls = Entity.entitiesWithTag(Type.player)
+        var pls = Entity.withTagOverlap(Type.player)
         if(pls.count == 1) {
             __hero = pls[0]            
         }
         return __hero
     }
 
+ }
+
+ class Queue {
+
+    construct new() {
+        _data = []
+    }
+
+    push(val) {
+        _data.add(val)
+    }
+
+    pop() {
+        if(!empty()) {
+            var val = _data[0]
+            _data.removeAt(0)
+            return val
+        }
+    }
+
+    empty() { _data.count == 0 }
+ }
+
+class Dequeue {
+
+    construct new() {
+        _data = []
+    }
+
+    push(val) {
+        _data.add(val)
+    }
+
+    pop() {
+        if(!empty()) {
+            var val = _data[_data.count - 1]
+            _data.removeAt(_data.count - 1)
+            return val
+        }
+    }
+
+    empty() { _data.count == 0 }
  }
 
  class Slime is Character {
@@ -407,8 +451,8 @@ class Hero is Character {
         if(state == Character.selected) {
             var dir = getDirection()                                                         
             if(dir >= 0) {
-                    _direction = Directions[dir]
-                if(checkTile(dir, Type.enemy)) {
+                _direction = Directions[dir]
+                if(checkTile(dir, Type.player)) {
                     attackTile(dir)
                 } else if(!checkTile(dir, Type.blocking)) {
                     moveTile(dir)
@@ -426,27 +470,20 @@ class Hero is Character {
 
     getDirection() {
         System.print("getting Direction for %(owner.name)")
-        for(dir in 0...4) {        
-            var currentPos = Vec2.new(tile.x, tile.y)
-            // var playerPos = Vec2.new(playerTile.x, playerTile.y)
-            var d = Directions[dir]
-            var movePos = currentPos + d
-            var flag = Level[movePos.x, movePos.y]
-            for(t in Tile.get(movePos.x, movePos.y)) {
-                flag = flag | t.owner.tag // |
+        if(__fill) {
+            if(__fill.has(tile.x, tile.y)) {
+                var d = __fill[tile.x, tile.y]
+                return Directions.getIndex(d)
             }
-            if(flag == Type.floor) {
-                System.print("getDirection for %(owner.name) is %(dir)")
-                return dir
-            }            
         }
-        System.print("getDirection for %(owner.name) is -1")
+
         return -1
     }
 
     static turn() {
-        // TODO: Generate flood fill
-        var enemies = Entity.entitiesWithTag(Type.enemy)
+        floodFill()
+        Fiber.yield()
+        var enemies = Entity.withTagOverlap(Type.enemy)
         for(e in enemies) {
             var s = e.getComponent(Slime)
             s.select()
@@ -456,6 +493,47 @@ class Hero is Character {
             Fiber.yield()
             Fiber.yield()
             Fiber.yield()
+        }
+    }
+
+    static floodFill() {
+        if(Hero.hero) {
+            var hero = Hero.hero.getComponent(Tile)
+            var open = Queue.new()
+            var fill = SpraseGrid.new(Vec2.new(0,0))
+            open.push(Vec2.new(hero.x, hero.y))
+            fill[hero.x, hero.y] = Vec2.new(0,0)
+            while(!open.empty()) {
+                var next = open.pop()
+                for(i in 0...4) {
+                    var nghb = next + Directions[i]
+                    if(Level.contains(nghb.x, nghb.y) && !fill.has(nghb.x, nghb.y)) {
+                        var flags = Gameplay.getFlags(nghb.x, nghb.y)
+                        if(!Bits.checkBitFlagOverlap(flags, Type.monsterBlock)) {
+                            fill[nghb.x, nghb.y] = -Directions[i]
+                            open.push(nghb)
+                        }
+                    } 
+                }
+            }
+            __fill = fill
+        } else {
+            __fill = null
+        }
+    }
+
+    static debugRender() {       
+        if(__fill != null) { 
+            for (x in 0...Level.width) {
+                for (y in 0...Level.height) {
+                    if(__fill.has(x, y)) { 
+                        var dr = __fill[x, y]
+                        var fr = Level.calculatePos(x, y)
+                        var to = Level.calculatePos(x + dr.x, y + dr.y)
+                        Render.line(fr.x, fr.y, to.x, to.y)
+                    }
+                }
+            }
         }
     }
  }
@@ -483,6 +561,19 @@ class Hero is Character {
             __turnFiber.call()
         }
     }
+
+    static getFlags(x, y) {
+        if(Level.contains(x, y)) {
+            var flag = Level[x, y]
+            for(t in Tile.get(x, y)) {
+                flag = flag | t.owner.tag // |
+            }
+            return flag
+        } else {
+            return
+        }
+    }
+
 
     static debugRender() {
         var dbg = Data.getBool("Debug Draw", Data.debug)
@@ -524,5 +615,8 @@ class Hero is Character {
                 }
             }
         }
+
+        Render.setColor(0xFF0000FF)
+        Slime.debugRender()
     }
  }

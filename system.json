@@ -1,4 +1,8 @@
 {
+    "Always on top": {
+        "type": "bool",
+        "value": true
+    },
     "Height": {
         "type": "number",
         "value": 180.0

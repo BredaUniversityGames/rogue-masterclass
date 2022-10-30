@@ -17,4 +17,17 @@ class Directions {
             return Vec2.new(-1, 0)   // Left
         }
     }
+
+    static getIndex(vec) {
+        if(vec.x == 0 && vec.y == 1) {
+            return upIdx
+        } else if(vec.x == 1 && vec.y == 0) {
+            return rightIdx
+        } else if(vec.x == 0 && vec.y == -1) {
+            return downIdx
+        } else if(vec.x == -1 && vec.y == 0) {
+            return leftIdx 
+        }
+       
+    } 
 }

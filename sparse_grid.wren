@@ -1,4 +1,4 @@
-/// Logical representation of the game grid.
+/// Logical representation of the game grid with many empty spaces
 class SpraseGrid {
     construct new(zero) {
         _grid = {}
@@ -10,20 +10,20 @@ class SpraseGrid {
 
     static makeId(x, y) { x << 16 | y }
 
-    /// Checks if a given cell position exists in the grid.
-    isValidPosition(x, y) {
-        return true
-    }    
+    has(x, y) {
+        var id =  SpraseGrid.makeId(x, y)
+        return _grid.containsKey(id)
+    }
 
     /// Returns the value stored at the given grid cell.    
     [x, y] {
         var id =  SpraseGrid.makeId(x, y)
-        var val = _grid[id]
-        if(val != null) {
-            return val
+        if(_grid.containsKey(id)) {
+            return _grid[id]
+        } else {
+            _grid[id] = _zero.type.new()
+            return _grid[id]
         }
-        _grid[id] = _zero.type.new()
-        return _grid[id] //_zero.type.new()
     }
 
     /// Assigns a given value to a given grid cell.    

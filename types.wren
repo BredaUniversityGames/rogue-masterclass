@@ -16,4 +16,6 @@ class Type {
 //    static attackable   { enemy }
     static blocking     { (wall | enemy | door | player) }
 //    static character    { (player | enemy) }
+
+    static monsterBlock { (wall | light | pot | chest) }
 }

@@ -119,7 +119,7 @@ class Randy {
         for(i in 1...100) {
             var x = random.int(1, Level.width - 1)
             var y = random.int(1, Level.height - 1)
-            if(Level.isValidPosition(x, y) && Level[x, y] == Type.floor && Tile.get(x,y).count == 0) {
+            if(Level.contains(x, y) && Level[x, y] == Type.floor && Tile.get(x,y).count == 0) {
                 return Vec2.new(x,y)
             }
         }
@@ -236,7 +236,7 @@ class RandomWalk {
         for(i in 1...100) {
             var x = random.int(1, Level.width - 1)
             var y = random.int(1, Level.height - 1)
-            if(Level.isValidPosition(x, y) && Level[x, y] == Type.floor && Tile.get(x,y).count == 0) {
+            if(Level.contains(x, y) && Level[x, y] == Type.floor && Tile.get(x,y).count == 0) {
                 return Vec2.new(x,y)
             }
         }
