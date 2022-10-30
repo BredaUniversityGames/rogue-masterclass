@@ -13,25 +13,11 @@ class Directions {
         } else if(i == 1) {
             return Vec2.new(1, 0)   // Right
         } else if(i == 2) {
-            return Vec2.new(0, -1)   // Down
+            return Vec2.new(0, -1)  // Down
         } else if(i == 3) {
-            return Vec2.new(-1, 0)   // Left
+            return Vec2.new(-1, 0)  // Left
         } else if(i == 4) {
             return Vec2.new(0, 0)   // None
-        }
-    }
-
-    static getIndex(vec) {
-        if(vec.x == 0 && vec.y == 1) {
-            return upIdx
-        } else if(vec.x == 1 && vec.y == 0) {
-            return rightIdx
-        } else if(vec.x == 0 && vec.y == -1) {
-            return downIdx
-        } else if(vec.x == -1 && vec.y == 0) {
-            return leftIdx 
-        } else if(vec.x == 0 && vec.y == 0) {
-            return noneIdx 
         }
     } 
 }

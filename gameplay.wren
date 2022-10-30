@@ -420,7 +420,7 @@ class Hero is Character {
                     moveTile(dir)
                 }
             } else {
-                System.print("Slime %(owner.name) is going to idle")
+                // System.print("Slime %(owner.name) is going to idle")
                 state = Character.idle
                 return true
             }
@@ -431,14 +431,12 @@ class Hero is Character {
     }
 
     getDirection() {
-        System.print("getting Direction for %(owner.name)")
+        // System.print("getting Direction for %(owner.name)")
         if(__fill) {
             if(__fill.has(tile.x, tile.y)) {
-                var d = __fill[tile.x, tile.y]
-                return Directions.getIndex(d)
+                return __fill[tile.x, tile.y]
             }
         }
-
         return -1
     }
 
@@ -464,7 +462,7 @@ class Hero is Character {
             var open = Queue.new()
             open.push(Vec2.new(hero.x, hero.y))
             __fill = SpraseGrid.new()
-            __fill[hero.x, hero.y] = Vec2.new(0,0)
+            __fill[hero.x, hero.y] = Directions.noneIdx
             while(!open.empty()) {
                 var next = open.pop()
                 for(i in 0...4) {
@@ -472,7 +470,7 @@ class Hero is Character {
                     if(Level.contains(nghb.x, nghb.y) && !__fill.has(nghb.x, nghb.y)) {
                         var flags = Gameplay.getFlags(nghb.x, nghb.y)
                         if(!Bits.checkBitFlagOverlap(flags, Type.monsterBlock)) {
-                            __fill[nghb.x, nghb.y] = -Directions[i]
+                            __fill[nghb.x, nghb.y] = (i + 2) % 4 // Opposite direction 
                             open.push(nghb)
                         }
                     } 
@@ -487,7 +485,7 @@ class Hero is Character {
             for (x in 0...Level.width) {
                 for (y in 0...Level.height) {
                     if(__fill.has(x, y)) { 
-                        var dr = __fill[x, y]
+                        var dr = Directions[__fill[x, y]]
                         var fr = Level.calculatePos(x, y)
                         var to = Level.calculatePos(x + dr.x, y + dr.y)
                         Render.line(fr.x, fr.y, to.x, to.y)

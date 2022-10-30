@@ -12,5 +12,10 @@ class Type {
     static pot      { 1 << 9 }
     static stairs   { 1 << 10 }
     static light    { 1 << 11 }
+
+//    static attackable   { enemy }
+    static blocking     { (wall | enemy | door | player) }
+//    static character    { (player | enemy) }
+
     static monsterBlock { (wall | light | pot | chest) }
 }
