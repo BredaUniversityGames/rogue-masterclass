@@ -4,10 +4,9 @@ import "xs_assert" for Assert
 import "xs_ec"for Entity, Component
 import "xs_components" for Transform, Body, Renderable, Sprite, GridSprite, AnimatedSprite
 import "random" for Random
-import "sparse_grid" for SpraseGrid
-import "grid" for Grid
 import "types" for Type
 import "directions" for Directions
+import "data" for Grid, SpraseGrid, Queue
 
 class Level {    
     
@@ -83,7 +82,7 @@ class Level {
             var t  = l.getComponent(Tile)
             for(x in (t.x-3)..(t.x+3)) {
                 for(y in (t.y-3)..(t.y+3)) {
-                    if(__light.isValidPosition(x, y)) {
+                    if(__light.valid(x, y)) {
                         var d = Vec2.distance(Vec2.new(t.x, t.y), Vec2.new(x, y))
                         __light[x, y] = Math.max(255 - d * 56, __light[x, y])
                     }
@@ -112,7 +111,7 @@ class Level {
                     var flag = 0
                     for(i in 0...4) {
                         var n = pos + Directions[i]
-                        if(__grid.isValidPosition(n.x, n.y) && __grid[n.x, n.y] == Type.wall) {
+                        if(__grid.valid(n.x, n.y) && __grid[n.x, n.y] == Type.wall) {
                             flag = flag | 1 << i  // |
                         }
                     }
@@ -133,14 +132,14 @@ class Level {
 
     static random { __random }
 
-    static contains(x, y) { __grid.isValidPosition(x, y) }    
+    static contains(x, y) { __grid.valid(x, y) }    
 
     static [x, y] { __grid[x, y] }
 
     static [x, y]=(v) { __grid[x, y] = v }
 
     static getLight(x, y) {
-        if(__light.isValidPosition(x, y)) {
+        if(__light.valid(x, y)) {
             return __light[x, y]
         }
         return 0
@@ -149,18 +148,23 @@ class Level {
 
 class Tile is Component {
     static init() {
-        __tiles = SpraseGrid.new([])
+        __tiles = SpraseGrid.new()
     }
 
     static add(x, y, tile) {
+        if(!__tiles.has(x, y)) {
+            __tiles[x, y] = []
+        }
         var l = __tiles[x, y]
         l.add(tile)
         __tiles[x, y] = l
     }
 
     static remove(x, y, tile) {
-        var l = __tiles[x, y]
-        l.removeAt(l.indexOf(tile))
+        if(__tiles.has(x, y)) {
+            var l = __tiles[x, y]
+            l.removeAt(l.indexOf(tile))
+        }
     }
 
     static move(fx, fy, tx, ty, tile) {
@@ -400,48 +404,6 @@ class Hero is Character {
 
  }
 
- class Queue {
-
-    construct new() {
-        _data = []
-    }
-
-    push(val) {
-        _data.add(val)
-    }
-
-    pop() {
-        if(!empty()) {
-            var val = _data[0]
-            _data.removeAt(0)
-            return val
-        }
-    }
-
-    empty() { _data.count == 0 }
- }
-
-class Dequeue {
-
-    construct new() {
-        _data = []
-    }
-
-    push(val) {
-        _data.add(val)
-    }
-
-    pop() {
-        if(!empty()) {
-            var val = _data[_data.count - 1]
-            _data.removeAt(_data.count - 1)
-            return val
-        }
-    }
-
-    empty() { _data.count == 0 }
- }
-
  class Slime is Character {
     construct new() {
         super(Type.player)         
@@ -500,25 +462,23 @@ class Dequeue {
         if(Hero.hero) {
             var hero = Hero.hero.getComponent(Tile)
             var open = Queue.new()
-            var fill = SpraseGrid.new(Vec2.new(0,0))
             open.push(Vec2.new(hero.x, hero.y))
-            fill[hero.x, hero.y] = Vec2.new(0,0)
+            __fill = SpraseGrid.new()
+            __fill[hero.x, hero.y] = Vec2.new(0,0)
             while(!open.empty()) {
                 var next = open.pop()
                 for(i in 0...4) {
                     var nghb = next + Directions[i]
-                    if(Level.contains(nghb.x, nghb.y) && !fill.has(nghb.x, nghb.y)) {
+                    if(Level.contains(nghb.x, nghb.y) && !__fill.has(nghb.x, nghb.y)) {
                         var flags = Gameplay.getFlags(nghb.x, nghb.y)
                         if(!Bits.checkBitFlagOverlap(flags, Type.monsterBlock)) {
-                            fill[nghb.x, nghb.y] = -Directions[i]
+                            __fill[nghb.x, nghb.y] = -Directions[i]
                             open.push(nghb)
                         }
                     } 
                 }
-            }
-            __fill = fill
-        } else {
-            __fill = null
+                Fiber.yield()
+            }            
         }
     }
 

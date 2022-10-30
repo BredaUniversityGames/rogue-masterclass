@@ -3,7 +3,6 @@ import "xs_math"for Math, Bits, Vec2, Color
 import "xs_assert" for Assert
 import "xs_ec"for Entity, Component
 import "xs_components" for Transform, Body, Renderable, Sprite, GridSprite, AnimatedSprite
-import "sparse_grid" for SpraseGrid
 import "types" for Type
 import "directions" for Directions
 import "gameplay" for Level

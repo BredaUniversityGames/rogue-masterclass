@@ -5,6 +5,7 @@ class Directions {
     static rightIdx { 1 }
     static downIdx  { 2 }
     static leftIdx  { 3 }
+    static noneIdx  { 4 }
 
     static [i] {
         if(i == 0) {
@@ -15,6 +16,8 @@ class Directions {
             return Vec2.new(0, -1)   // Down
         } else if(i == 3) {
             return Vec2.new(-1, 0)   // Left
+        } else if(i == 4) {
+            return Vec2.new(0, 0)   // None
         }
     }
 
@@ -27,7 +30,8 @@ class Directions {
             return downIdx
         } else if(vec.x == -1 && vec.y == 0) {
             return leftIdx 
+        } else if(vec.x == 0 && vec.y == 0) {
+            return noneIdx 
         }
-       
     } 
 }
