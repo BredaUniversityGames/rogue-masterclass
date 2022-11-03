@@ -18,9 +18,6 @@ class Level {
         __light = Grid.new(__width, __height, 0)
 
         var tilesImage = Render.loadImage("[game]/assets/tiles_dungeon.png")
-        var heroImage = Render.loadImage("[game]/assets/chara_hero.png")
-        var slimeImage = Render.loadImage("[game]/assets/chara_slime.png")
-
         __emptySprite = Render.createGridSprite(tilesImage, 20, 24, 3, 0)
 
         __wallSprites = [
@@ -73,7 +70,7 @@ class Level {
     static lightUp() {
         for (x in 0...__width) {
             for (y in 0...__height) {
-                __light[x, y] = 255
+                __light[x, y] = 100
             }
         }
 
@@ -242,8 +239,10 @@ class Character is Component {
     static attacking    { 3 }
     static pain         { 4 }
 
-    construct new(attackable) {
+    construct new(attackable, health, damage) {
         _attackable = attackable
+        _health = health
+        _damage = damage
         _state = Character.idle
         _direction = Directions.downIdx
         _flags = [  Render.spriteCenter,
@@ -266,6 +265,10 @@ class Character is Component {
             _state = Character.idle
             _anim.playAnimation("idle")
             _anim.mode = AnimatedSprite.loop
+        }
+
+        if(_health <= 0) {
+            owner.delete()
         }
 
         if(Data.getBool("Debug Draw", Data.debug)) {
@@ -293,7 +296,7 @@ class Character is Component {
     }
 
     moveTile(dir) {
-        System.print("Moving from position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
+        //System.print("Moving from position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         var d = Directions[dir]
         _tile.move(d.x, d.y, 0.3) //TODO: Take this from Data
         _anim.playAnimation("walk " + _anims[dir])
@@ -314,18 +317,19 @@ class Character is Component {
         for(t in Tile.get(x, y)) {
             if(Bits.checkBitFlag(_attackable, t.owner.tag)) {
                 var c = t.owner.getComponentSuper(Character)
-                c.recieveAttack(dir)
+                c.recieveAttack(dir, _damage)
             }
         }
     }
 
-    recieveAttack(dir) {        
+    recieveAttack(dir, damage) {        
         System.print("Getting pain position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         dir = (dir + 2) % 4
         _anim.playAnimation("pain " + _anims[dir])
         _anim.mode = AnimatedSprite.once
         _anim.flags = _flags[dir]
         _state = Character.pain
+        _health = _health - damage
     }
 
     select() {
@@ -336,11 +340,13 @@ class Character is Component {
     state { _state }
     state=(v) { _state = v}
     tile { _tile }
+    health { _health }
+    damage { _damage }
 }
 
 class Hero is Character {    
     construct new() {
-        super(Type.enemy)
+        super(Type.enemy, Data.getNumber("Hero Health"), Data.getNumber("Hero Damage"))
         _buttons = [Input.gamepadDPadUp,
                     Input.gamepadDPadRight,
                     Input.gamepadDPadDown,
@@ -404,9 +410,9 @@ class Hero is Character {
 
  }
 
- class Slime is Character {
+ class Monster is Character {
     construct new() {
-        super(Type.player)         
+        super(Type.player, Data.getNumber("Monster Health"), Data.getNumber("Monster Damage"))         
     }
 
     turn() {
@@ -420,7 +426,7 @@ class Hero is Character {
                     moveTile(dir)
                 }
             } else {
-                // System.print("Slime %(owner.name) is going to idle")
+                // System.print("Monster %(owner.name) is going to idle")
                 state = Character.idle
                 return true
             }
@@ -445,14 +451,13 @@ class Hero is Character {
         Fiber.yield()
         var enemies = Entity.withTagOverlap(Type.enemy)
         for(e in enemies) {
-            var s = e.getComponent(Slime)
+            var s = e.getComponent(Monster)
             s.select()
             s.turn()
-            Fiber.yield()
-            Fiber.yield()
-            Fiber.yield()
-            Fiber.yield()
-            Fiber.yield()
+            var wait = s.state == Character.attacking ? 12 : 8
+            for(i in  1...wait) {
+                Fiber.yield()
+            }
         }
     }
 
@@ -473,10 +478,9 @@ class Hero is Character {
                             __fill[nghb.x, nghb.y] = (i + 2) % 4 // Opposite direction 
                             open.push(nghb)
                         }
-                    } 
+                    }                     
                 }
-                Fiber.yield()
-            }            
+            }   
         }
     }
 
@@ -504,13 +508,14 @@ class Hero is Character {
     static init() {
         __turn = computerTurn
         __turnFiber = Fiber.new { }
+        var ui = Create.healthbar()
     }    
 
     static update(dt) {
         if(__turnFiber.isDone) {
             if(__turn == playerTurn) {
                 __turn = computerTurn
-                __turnFiber = Fiber.new { Slime.turn() }
+                __turnFiber = Fiber.new { Monster.turn() }
             } else if(__turn == computerTurn) {
                 __turn = playerTurn
                 __turnFiber = Fiber.new { Hero.turn() }
@@ -531,7 +536,6 @@ class Hero is Character {
             return
         }
     }
-
 
     static debugRender() {
         var dbg = Data.getBool("Debug Draw", Data.debug)
@@ -575,6 +579,8 @@ class Hero is Character {
         }
 
         Render.setColor(0xFF0000FF)
-        Slime.debugRender()
+        Monster.debugRender()
     }
  }
+
+import "create" for Create 

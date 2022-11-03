@@ -1,4 +1,12 @@
 {
+    "Hero Damage": {
+        "type": "number",
+        "value": 10.0
+    },
+    "Hero Health": {
+        "type": "number",
+        "value": 100.0
+    },
     "Level Height": {
         "type": "number",
         "value": 11.0
@@ -10,6 +18,14 @@
     "Long Brake": {
         "type": "number",
         "value": 0.0
+    },
+    "Monster Damage": {
+        "type": "number",
+        "value": 10.0
+    },
+    "Monster Health": {
+        "type": "number",
+        "value": 20.0
     },
     "Move Speed": {
         "type": "number",

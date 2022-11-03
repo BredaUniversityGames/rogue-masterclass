@@ -4,6 +4,7 @@ import "xs_ec"for Entity, Component
 import "xs_components" for Transform, Body, Renderable, Sprite, GridSprite, AnimatedSprite
 import "random" for Random
 import "types" for Type
+import "ui" for Healthbar 
 
 class Create {
 
@@ -15,7 +16,7 @@ class Create {
     static character(x, y, image) {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
-        var s = AnimatedSprite.new(image, 4, 11, 30) // Same image for all
+        var s = AnimatedSprite.new(image, 4, 11, 15) // Same image for all
         var tl = Tile.new(x, y)
         var f = 0
         s.addAnimation("idle",          [f,f,f,f,f,f,f,f,f+1,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+1,f+1,f+1])
@@ -57,9 +58,21 @@ class Create {
         return entity
     }
 
-    static slime(x, y) {
-        var entity = character(x, y, "[game]/assets/chara_slime.png")
-        var s = Slime.new()
+    static monster(x, y) {
+
+        var imgs = [
+            "[game]/assets/chara_bat.png",
+            "[game]/assets/chara_orc.png",
+            "[game]/assets/chara_goblin.png",
+            "[game]/assets/chara_spider.png",
+            "[game]/assets/chara_slime.png",
+            "[game]/assets/chara_troll.png"
+        ]
+
+        var i = __random.int(0, imgs.count)
+        // var img = imgs[i]
+        var entity = character(x, y, imgs[i])
+        var s = Monster.new()
         entity.addComponent(s)
         entity.tag = Type.enemy
         entity.name = "S%(nextID)"
@@ -115,7 +128,7 @@ class Create {
             var t = Transform.new(pos)
             var tl = Tile.new(x, y)
             tl.z = 0.1
-            var s = AnimatedSprite.new("[game]/assets/tiles_dungeon.png", 20, 12, 15)
+            var s = AnimatedSprite.new("[game]/assets/tiles_dungeon.png", 20, 12, 5)
             s.addAnimation("burn", [180, 181, 182, 183])
             s.playAnimation("burn")
             s.mode = AnimatedSprite.loop
@@ -159,6 +172,30 @@ class Create {
         entity.name = "F%(nextID)"
         return entity
     }
+
+    static healthbar() {
+        {
+            var entity = Entity.new()
+            var t = Transform.new(Vec2.new(-152, 65))
+            var s = Sprite.new("[game]/assets/health_bar_decoration.png")
+            s.layer = 10000
+            entity.addComponent(t)
+            entity.addComponent(s)        
+            entity.name = "HealthbarBg %(nextID)"
+        }
+        {
+            var entity = Entity.new()
+            var t = Transform.new(Vec2.new(-138, 65))
+            var s = GridSprite.new("[game]/assets/health_bar.png", 1, 11)
+            s.layer = 10001
+            var h = Healthbar.new()
+            entity.addComponent(t)
+            entity.addComponent(s) 
+            entity.addComponent(h)        
+            entity.name = "Healthbar %(nextID)"
+            return entity
+        }
+    }
 }
 
-import "gameplay" for Hero, Slime, Tile, Level
+import "gameplay" for Hero, Monster, Tile, Level

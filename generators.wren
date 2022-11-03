@@ -109,7 +109,7 @@ class Randy {
 
         for(i in 0...level) {
             var pos = findFree(random)
-            Create.slime(pos.x, pos.y)
+            Create.monster(pos.x, pos.y)
             Fiber.yield(longBrake)
         }
         return 0.0
@@ -227,7 +227,7 @@ class RandomWalk {
 
         for(i in 0...level) {
             var pos = findFree(random)
-            Create.slime(pos.x, pos.y)
+            Create.monster(pos.x, pos.y)
         }
         return 0.0
     }
