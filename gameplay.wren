@@ -68,13 +68,16 @@ class Level {
     }
 
     static lightUp() {
+        var lights = Entity.withTagOverlap(Type.player | Type.light)
+
+        var unlit = lights.count != 0 ? 100 : 150
+
         for (x in 0...__width) {
             for (y in 0...__height) {
-                __light[x, y] = 100
+                __light[x, y] = unlit
             }
         }
-
-        var lights = Entity.withTagOverlap(Type.player | Type.light)
+        
         for(l in lights) {
             var t  = l.getComponent(Tile)
             for(x in (t.x-3)..(t.x+3)) {
@@ -134,6 +137,10 @@ class Level {
     static [x, y] { __grid[x, y] }
 
     static [x, y]=(v) { __grid[x, y] = v }
+
+    static [pos] { __grid[pos.x, pos.y] }
+
+    static [pos]=(v) { __grid[pos.x, pos.y] = v }
 
     static getLight(x, y) {
         if(__light.valid(x, y)) {
@@ -505,6 +512,7 @@ class Hero is Character {
     }
 
     update(dt) {
+        return
         var pls = Entity.withTag(Type.player)
         if(pls.count != 0) {
             var p = pls[0]
@@ -522,7 +530,7 @@ class Hero is Character {
     static init() {
         __turn = computerTurn
         __turnFiber = Fiber.new { }
-        var ui = Create.healthbar()
+        //var ui = Create.healthbar()
     }    
 
     static update(dt) {

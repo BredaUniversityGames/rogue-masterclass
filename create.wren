@@ -147,11 +147,29 @@ class Create {
         }
     }
 
+    static wallTorch(x, y) {
+        var entity = Entity.new()
+        var pos = Level.calculatePos(x, y) + Vec2.new(0, Level.tileSize / 2)
+        var t = Transform.new(pos)
+        var tl = Tile.new(x, y)
+        tl.z = 0.1
+        var s = AnimatedSprite.new("[game]/assets/tiles_dungeon.png", 20, 12, 5)
+        s.addAnimation("burn", [180, 181, 182, 183])
+        s.playAnimation("burn")
+        s.mode = AnimatedSprite.loop
+        s.flags = Render.spriteCenter
+        entity.addComponent(t)
+        entity.addComponent(tl)
+        entity.addComponent(s)        
+        entity.name = "T%(nextID)"
+        entity.tag = Type.light
+    }
+
     static something(x, y) {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
         var s = GridSprite.new("[game]/assets/tiles_dungeon.png", 20, 24)
-        var stuff = [240, 354, 358, 357, 358, 396, 356]
+        var stuff = [356, 357, 358, 396, 397, 398]
         var idx = __random.int(0, stuff.count)
         s.idx = stuff[idx]
         var tl = Tile.new(x, y)
@@ -160,6 +178,21 @@ class Create {
         entity.addComponent(s)        
         entity.addComponent(tl)
         entity.tag = Type.wall
+        entity.name = "F%(nextID)"
+        return entity
+    }
+
+    static treasure(x, y) {
+        var entity = Entity.new()
+        var t = Transform.new(Level.calculatePos(x, y))
+        var s = GridSprite.new("[game]/assets/tiles_dungeon.png", 20, 24)
+        s.idx = 354
+        var tl = Tile.new(x, y)
+        s.flags = Render.spriteCenter
+        entity.addComponent(t)
+        entity.addComponent(s)        
+        entity.addComponent(tl)
+        entity.tag = Type.wall | Type.light
         entity.name = "F%(nextID)"
         return entity
     }

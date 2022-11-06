@@ -25,8 +25,8 @@ class Game {
         
         __time = 0        
         __state = generating // Skip loading
-        var alg = BSPer
-        __genFiber =  Fiber.new { alg.generate() }
+        __alg = BSPer
+        __genFiber =  Fiber.new { __alg.generate() }
     }   
     
     static update(dt) {  
@@ -38,7 +38,7 @@ class Game {
         }
 
         Entity.update(dt)        
-        BSPer.debugRender()
+        __alg.debugRender()
     }
 
     static genStep(dt) {
@@ -67,5 +67,5 @@ class Game {
  }
 
 import "create" for Create
-import "generators" for Randy, BSPer
+import "generators" for Randy, BSPer, RandomWalk
 import "gameplay" for Hero, Tile, Gameplay
