@@ -384,16 +384,15 @@ class Hero is Character {
     }
 
     static turn() {
-        var hero = Hero.hero.getComponent(Hero)
-        hero.select()
-        while(true && Hero.hero != null) {    
-            if(hero.state == Character.idle) {
-                //hero.select()
+        if(Hero.hero) {
+            var hero = Hero.hero.getComponent(Hero)
+            hero.select()
+            while(true && Hero.hero != null) {
+                if(hero.turn()) {
+                    return
+                }
+                Fiber.yield()
             }
-            if(hero.turn()) {
-                return
-            }
-            Fiber.yield()
         }
     }
 
@@ -500,6 +499,21 @@ class Hero is Character {
     }
  }
 
+ class Camera is Component {
+    construct new() {
+        System.print("new")
+    }
+
+    update(dt) {
+        var pls = Entity.withTag(Type.player)
+        if(pls.count != 0) {
+            var p = pls[0]
+            var t = p.getComponent(Transform)
+            Render.setOffset(-t.position.x, -t.position.y) 
+        }
+    }
+ }
+
  class Gameplay {
     static generating   { 0 }
     static playerTurn   { 1 }
@@ -538,6 +552,7 @@ class Hero is Character {
     }
 
     static debugRender() {
+        return
         var dbg = Data.getBool("Debug Draw", Data.debug)
         if(!dbg) {
             return

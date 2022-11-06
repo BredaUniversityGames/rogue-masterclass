@@ -9,15 +9,15 @@
     },
     "Level Height": {
         "type": "number",
-        "value": 11.0
+        "value": 23.0
     },
     "Level Width": {
         "type": "number",
-        "value": 19.0
+        "value": 40.0
     },
     "Long Brake": {
         "type": "number",
-        "value": 0.0
+        "value": 0.20000000298023224
     },
     "Monster Damage": {
         "type": "number",

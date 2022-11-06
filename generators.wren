@@ -112,6 +112,9 @@ class Randy {
             Create.monster(pos.x, pos.y)
             Fiber.yield(longBrake)
         }
+
+        Create.camera()
+
         return 0.0
     }
 
@@ -229,6 +232,9 @@ class RandomWalk {
             var pos = findFree(random)
             Create.monster(pos.x, pos.y)
         }
+
+        Create.camera()
+
         return 0.0
     }
 
@@ -244,10 +250,28 @@ class RandomWalk {
 }
 
 
+class Rect {
+    construct new(from, to) {
+        _from = from
+        _to = to
+    }
+
+    toString { "[%(from.x),%(from.y)]-[%(to.x),%(to.y)]" }
+
+    from { _from }
+    to { _to }
+}
+
+
 class BSPer {
-    static generate() {
-        var random = Random.new()
-        // var level = 9
+    static generate() {        
+        __random = Random.new()
+        __rooms = []
+        __halls = []
+        __colors = [
+            0x4d89f280, 0x2feff980, 0xed3bf980, 0x473bd380,
+            0x72ffa180, 0x5c720180, 0xf25ca480, 0xe25dce80]
+
         var shortBrake = Data.getNumber("Short Brake")
         var longBrake = Data.getNumber("Long Brake")
         var width = Level.width
@@ -255,66 +279,150 @@ class BSPer {
 
         for (x in 0...width) {
             for (y in 0...height) {
-                Level[x, y] = Type.floor
+                Level[x, y] = Type.wall
             }
-            Fiber.yield(shortBrake)
+            //Fiber.yield(shortBrake)
         }
 
         for (x in 0...width) {
             Level[x, 0] = Type.wall
             Level[x, height-1] = Type.wall
-            Fiber.yield(shortBrake)
+            //Fiber.yield(shortBrake)
         }
 
         for (y in 0...height) {
             Level[0, y] = Type.wall
             Level[width-1, y] = Type.wall
-            Fiber.yield(shortBrake)
+            //Fiber.yield(shortBrake)
         }
 
+        Fiber.yield(longBrake)
+        var rooms = []
         split(  Vec2.new(0, 0),
-                Vec2.new(Level.width, Level.height),
-                random)
+                Vec2.new(Level.width, Level.height))
+
+        makeRooms()
+        makeHalls()
 
         return 0.0
     }
 
-    static split(from, to, random) {
+    static split(from, to) {
         var shortBrake = Data.getNumber("Short Brake")
         var longBrake = Data.getNumber("Long Brake")
-        var padd = 3 //Data.getNumber("Offest")
-        Fiber.yield(shortBrake)
+        var padd = 4 //Data.getNumber("Offest")
+        // Fiber.yield(shortBrake)
 
         var dx = to.x - from.x
         var dy = to.y - from.y
 
-        if(dx >= dy && dx > 8) {
-            var spl = random.int(from.x + padd, to.x - padd)
+        // Render.rect(from.x, from.y, to.x, to.y)        
 
-            //var spl = (from.x + dx / 2).round
-            for (y in from.y...to.y) {
-                Level[spl, y] = Type.wall
+        if(dx > 11 || dy > 11) {
+            if(dx >= dy) {
+                var spl = __random.int(from.x + padd, to.x - padd)                
+                var mid = ((from.y + to.y) / 2).round
+                __halls.add(Rect.new(Vec2.new(spl-2, mid - 1), Vec2.new(spl+2, mid)))
+                split(  from, Vec2.new(spl, to.y))
+                split(  Vec2.new(spl, from.y), to)                
+            } else {
+                var spl = __random.int(from.y + padd, to.y - padd)
+                var mid = ((from.x + to.x) / 2).round
+                __halls.add(Rect.new(Vec2.new(mid - 1, spl - 2), Vec2.new(mid, spl + 2)))
+                split(  from, Vec2.new(to.x, spl))
+                split(  Vec2.new(from.x, spl), to)                
             }
-            split(  from, Vec2.new(spl, to.y), random)
-            split(  Vec2.new(spl, from.y), to, random)
-
-        } else if(dy > 8) {
-            //var spl = (from.y + dy / 2).round
-            var spl = random.int(from.y + padd, to.y - padd)
-            for (x in from.x...to.x) {
-                Level[x, spl] = Type.wall                
-            }
-            split(  from, Vec2.new(to.x, spl), random)
-            split(  Vec2.new(from.x, spl), to, random)
         } else {
+            var rect = Rect.new(from, to)
+            System.print("add room: %(rect)")
+            __rooms.add(rect)
+            Fiber.yield(longBrake)
             // Room is small enough
-            decorate(from, to, random)
-        } 
+            // decorate(from, to)
+        }
     }
 
-    static decorate(from, to, random) {
+    static makeRooms() {
+        var brake = Data.getNumber("Long Brake")
+        var min = 6
+        for(room in __rooms) {                 
+            var dx = room.to.x - room.from.x
+            var dy = room.to.y - room.from.y
+            var fx = dx > min ? room.from.x + inset : room.from.x + 1
+            var tx = dx > min ? room.to.x   - inset : room.to.x   - 1
+            var fy = dy > min ? room.from.y + inset : room.from.y + 1
+            var ty = dy > min ? room.to.y   - inset : room.to.y   - 1            
+            for (x in fx...tx) {
+                for (y in fy...ty) {
+                    Level[x, y] = Type.floor
+                }                
+            }    
+            Fiber.yield(brake)                    
+        }
 
+        System.print("rooms: %(__rooms.count)")
     }
+
+    static makeHalls() {
+        var brake = Data.getNumber("Long Brake")
+        for(hall in __halls) {
+            var fx = hall.from.x
+            var fy = hall.from.y
+            var tx = hall.to.x
+            var ty = hall.to.y
+
+            for (x in fx...tx) {
+                for (y in fy...ty) {
+                    Level[x, y] = Type.floor
+                }                
+            }    
+            Fiber.yield(brake)                    
+        }
+    }
+
+
+
+    static debugRender() {
+        var dbg = Data.getBool("Debug Draw", Data.debug)
+        if(!dbg) {
+            return
+        }
+        //System.print("rooms: %(__rooms.count)")        
+        var off = Vec2.new(Level.tileSize, Level.tileSize) * -0.5
+        for(room in __rooms) {         
+            var color = __colors[(room.from.x + room.from.y + room.to.x + room.to.y) % __colors.count]
+            Render.setColor(color)
+
+            var from = Level.calculatePos(
+                room.from.x,
+                room.from.y) + off
+            var to = Level.calculatePos(
+                room.to.x,
+                room.to.y) + off                        
+            Render.rect(from.x + 1, from.y + 1, to.x - 1, to.y- 1)
+        }
+
+        // System.print("halls: %(__halls.count)")
+        for(hall in __halls) {         
+            var color = __colors[(hall.from.x + hall.from.y + hall.to.x + hall.to.y) % __colors.count]
+            Render.setColor(color)
+
+            var from = Level.calculatePos(
+                hall.from.x,
+                hall.from.y) + off
+            var to = Level.calculatePos(
+                hall.to.x,
+                hall.to.y) + off                        
+            Render.rect(from.x, from.y, to.x, to.y)
+        }
+    }
+
+    static inset { __random.int(1, 3) }
+
+    //static inset { 1 }
+
+
+    static decorate(from, to) {}
 }
 
 import "create" for Create

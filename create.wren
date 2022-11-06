@@ -4,13 +4,19 @@ import "xs_ec"for Entity, Component
 import "xs_components" for Transform, Body, Renderable, Sprite, GridSprite, AnimatedSprite
 import "random" for Random
 import "types" for Type
-import "ui" for Healthbar 
+import "ui" for Healthbar
 
 class Create {
 
     static init() {
         __random = Random.new()
         __id = 0
+    }
+
+    static camera() {
+        var e = Entity.new()
+        var c = Camera.new()
+        e.addComponent(c)
     }
 
     static character(x, y, image) {
@@ -179,6 +185,7 @@ class Create {
             var t = Transform.new(Vec2.new(-152, 65))
             var s = Sprite.new("[game]/assets/health_bar_decoration.png")
             s.layer = 10000
+            s.flags = Render.spriteOverlay
             entity.addComponent(t)
             entity.addComponent(s)        
             entity.name = "HealthbarBg %(nextID)"
@@ -188,6 +195,7 @@ class Create {
             var t = Transform.new(Vec2.new(-138, 65))
             var s = GridSprite.new("[game]/assets/health_bar.png", 1, 11)
             s.layer = 10001
+            s.flags = Render.spriteOverlay
             var h = Healthbar.new()
             entity.addComponent(t)
             entity.addComponent(s) 
@@ -198,4 +206,4 @@ class Create {
     }
 }
 
-import "gameplay" for Hero, Monster, Tile, Level
+import "gameplay" for Hero, Monster, Tile, Level, Camera
