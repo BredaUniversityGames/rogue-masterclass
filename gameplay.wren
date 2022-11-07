@@ -474,7 +474,8 @@ class Hero is Character {
             open.push(Vec2.new(hero.x, hero.y))
             __fill = SpraseGrid.new()
             __fill[hero.x, hero.y] = Directions.noneIdx
-            while(!open.empty()) {
+            var count = 50
+            while(!open.empty() && count > 0) {
                 var next = open.pop()
                 for(i in 0...4) {
                     var nghb = next + Directions[i]
@@ -486,11 +487,14 @@ class Hero is Character {
                         }
                     }                     
                 }
+                count = count - 1
+                Fiber.yield(0.0)
             }   
         }
     }
 
-    static debugRender() {       
+    static debugRender() { 
+        Render.setColor(0xFF0000FF)    
         if(__fill != null) { 
             for (x in 0...Level.width) {
                 for (y in 0...Level.height) {

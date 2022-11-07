@@ -15,6 +15,7 @@ class Randy {
         var width = Level.width
         var height = Level.height
 
+        // Init all tiles to floow
         for (x in 0...width) {
             for (y in 0...height) {
                 Level[x, y] = Type.floor
@@ -22,12 +23,14 @@ class Randy {
             Fiber.yield(shortBrake)
         }
 
+        // Top and bottom to wall
         for (x in 0...width) {
             Level[x, 0] = Type.wall
             Level[x, height-1] = Type.wall
             Fiber.yield(shortBrake)
         }
 
+        // Left and right edge to wall
         for (y in 0...height) {
             Level[0, y] = Type.wall
             Level[width-1, y] = Type.wall
@@ -154,8 +157,9 @@ class Walker {
                 _direction = Math.mod(_direction - 1, 4)
         }
         _position = _position + Directions[_direction]
-        if(inBounds && _steps < 45) {
+        if(inBounds && _steps < 39) {
             Level[_position] = Type.floor
+            Level[-_position.x, _position.y] = Type.floor
             if( turn &&
                 Gameplay.getFlags(_position.x, _position.y) == Type.floor &&
                 _random.float(0.0, 1.0) < 0.25) {
@@ -182,7 +186,7 @@ class RandomWalk {
             }
         }
 
-        for(i in 0..10) {
+        for(i in 0..5) {
             var wlk = Walker.new(Vec2.new(
                 Level.width / 2 - 1,
                 (Level.height / 2).round),

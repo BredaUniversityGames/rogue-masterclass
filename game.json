@@ -17,7 +17,7 @@
     },
     "Long Brake": {
         "type": "number",
-        "value": 0.20000000298023224
+        "value": 0.0
     },
     "Monster Damage": {
         "type": "number",
