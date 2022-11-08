@@ -9,11 +9,11 @@
     },
     "Level Height": {
         "type": "number",
-        "value": 23.0
+        "value": 20.0
     },
     "Level Width": {
         "type": "number",
-        "value": 40.0
+        "value": 38.0
     },
     "Long Brake": {
         "type": "number",
@@ -41,6 +41,6 @@
     },
     "Tile Size": {
         "type": "number",
-        "value": 16.0
+        "value": 8.0
     }
 }

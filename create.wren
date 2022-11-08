@@ -22,12 +22,14 @@ class Create {
     static character(x, y, image) {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
-        var s = AnimatedSprite.new(image, 4, 11, 15) // Same image for all
+        var s = AnimatedSprite.new(image, 24, 4, 30) // Same image for all
         var tl = Tile.new(x, y)
         var f = 0
-        s.addAnimation("idle",          [f,f,f,f,f,f,f,f,f+1,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+1,f+1,f+1])
+        s.addAnimation("idle", [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0])
+
+        /*
         f = f + 4
-        s.addAnimation("selected",      [f,f,f,f,f,f,f,f,f+1,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+1,f+1,f+1])
+        .addAnimation("selected",      [f,f,f,f,f,f,f,f,f+1,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+1,f+1,f+1])
         f = f + 4
         s.addAnimation("walk down",     [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
         f = f + 4
@@ -46,6 +48,8 @@ class Create {
         s.addAnimation("pain side",     [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
         f = f + 4
         s.addAnimation("pain up",       [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
+        */
+
         s.playAnimation("idle")
         s.randomizeFrame(__random)
         s.flags = Render.spriteCenter
@@ -56,7 +60,7 @@ class Create {
     }
 
     static hero(x, y) {
-        var entity = character(x, y, "[game]/assets/chara_hero.png")
+        var entity = character(x, y, "[game]/assets/Creatures/Space Sargent/SpaceSargentIdle.png")
         var h = Hero.new()
         entity.addComponent(h)
         entity.tag = Type.player
@@ -65,19 +69,7 @@ class Create {
     }
 
     static monster(x, y) {
-
-        var imgs = [
-            "[game]/assets/chara_bat.png",
-            "[game]/assets/chara_orc.png",
-            "[game]/assets/chara_goblin.png",
-            "[game]/assets/chara_spider.png",
-            "[game]/assets/chara_slime.png",
-            "[game]/assets/chara_troll.png"
-        ]
-
-        var i = __random.int(0, imgs.count)
-        // var img = imgs[i]
-        var entity = character(x, y, imgs[i])
+        var entity = character(x, y, "[game]/assets/Creatures/SwarmAlien/SwarmAlienIdle.png")
         var s = Monster.new()
         entity.addComponent(s)
         entity.tag = Type.enemy
@@ -166,6 +158,7 @@ class Create {
     }
 
     static something(x, y) {
+        return null
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
         var s = GridSprite.new("[game]/assets/tiles_dungeon.png", 20, 24)

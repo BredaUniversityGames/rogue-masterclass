@@ -17,33 +17,34 @@ class Level {
         __grid = Grid.new(__width, __height, Type.empty)
         __light = Grid.new(__width, __height, 0)
 
-        var tilesImage = Render.loadImage("[game]/assets/tiles_dungeon.png")
+        __pretty = Grid.new(__width, __height, 0)
+
+        var tilesImage = Render.loadImage("[game]/assets/Tileset/DerelictTileset.png")
         __emptySprite = Render.createGridSprite(tilesImage, 20, 24, 3, 0)
+        __panelSprite = Render.createGridSprite(tilesImage, 21, 43, 134)
+
 
         __wallSprites = [
-            Render.createGridSprite(tilesImage, 20, 24, 0, 8),      // 0000
-            Render.createGridSprite(tilesImage, 20, 24, 0, 11),     // 0001
-            Render.createGridSprite(tilesImage, 20, 24, 1, 8),      // 0010
-            Render.createGridSprite(tilesImage, 20, 24, 1, 10),     // 0011
-            Render.createGridSprite(tilesImage, 20, 24, 0, 9),      // 0100
-            Render.createGridSprite(tilesImage, 20, 24, 0, 10),     // 0101
-            Render.createGridSprite(tilesImage, 20, 24, 1, 9),      // 0110
-            Render.createGridSprite(tilesImage, 20, 24, 3, 11),     // 0111
-            Render.createGridSprite(tilesImage, 20, 24, 3, 8),      // 1000
-            Render.createGridSprite(tilesImage, 20, 24, 2, 10),     // 1001
-            Render.createGridSprite(tilesImage, 20, 24, 2, 8),      // 1010
-            Render.createGridSprite(tilesImage, 20, 24, 3, 10),     // 1011
-            Render.createGridSprite(tilesImage, 20, 24, 2, 9),      // 1100
-            Render.createGridSprite(tilesImage, 20, 24, 1, 11),     // 1101
-            Render.createGridSprite(tilesImage, 20, 24, 2, 11),     // 1110
-            Render.createGridSprite(tilesImage, 20, 24, 3, 9)       // 1111
+            Render.createGridSprite(tilesImage, 21, 43, 22),    // 0000
+            Render.createGridSprite(tilesImage, 21, 43, 211),   // 0001
+            Render.createGridSprite(tilesImage, 21, 43, 27),    // 0010
+            Render.createGridSprite(tilesImage, 21, 43, 277),   // 0011
+            Render.createGridSprite(tilesImage, 21, 43, 169),   // 0100
+            Render.createGridSprite(tilesImage, 21, 43, 190),   // 0101
+            Render.createGridSprite(tilesImage, 21, 43, 109),   // 0110
+            Render.createGridSprite(tilesImage, 21, 43, 193),   // 0111
+            Render.createGridSprite(tilesImage, 21, 43, 29),    // 1000
+            Render.createGridSprite(tilesImage, 21, 43, 283),   // 1001
+            Render.createGridSprite(tilesImage, 21, 43, 28),    // 1010
+            Render.createGridSprite(tilesImage, 21, 43, 280),   // 1011
+            Render.createGridSprite(tilesImage, 21, 43, 115),   // 1100
+            Render.createGridSprite(tilesImage, 21, 43, 199),   // 1101
+            Render.createGridSprite(tilesImage, 21, 43, 112),   // 1110
+            Render.createGridSprite(tilesImage, 21, 43, 196)    // 1111
         ]
 
         __floorSprites = [
-            Render.createGridSprite(tilesImage, 20, 24, 14, 8),
-            Render.createGridSprite(tilesImage, 20, 24, 15, 8),
-            Render.createGridSprite(tilesImage, 20, 24, 14, 9),
-            Render.createGridSprite(tilesImage, 20, 24, 15, 9)
+            Render.createGridSprite(tilesImage, 21, 43, 632)
         ]
     }
 
@@ -70,7 +71,8 @@ class Level {
     static lightUp() {
         var lights = Entity.withTagOverlap(Type.player | Type.light)
 
-        var unlit = lights.count != 0 ? 100 : 150
+        //var unlit = lights.count != 0 ? 100 : 150
+        var unlit = 255
 
         for (x in 0...__width) {
             for (y in 0...__height) {
@@ -91,21 +93,12 @@ class Level {
         }
     }
 
-    static render() {
-        Level.lightUp()
-        var s = __tileSize  
-        var sx = (__width - 1) * -s / 2
-        var sy = (__height - 1)  * -s / 2
+    static generationRender() {
         for (x in 0...__width) {
             for (y in 0...__height) {
                 var v = __grid[x, y]
-                var px = sx + x * s
-                var py = sy + y * s
-                var sprite = null
-                var lv = __light[x, y]
-                var color = Color.new(lv, lv, lv, 255)
                 if(v == Type.empty) {
-                    Render.sprite(__emptySprite, px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)
+                    __pretty[x, y] = __emptySprite
                 } else if(v == Type.wall) {
                     var pos = Vec2.new(x, y)  
                     var flag = 0
@@ -115,11 +108,31 @@ class Level {
                             flag = flag | 1 << i  // |
                         }
                     }
-                    Render.sprite(__wallSprites[flag], px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)                    
-                } else {
-                    var i = (x + y) % __floorSprites.count
-                    Render.sprite(__floorSprites[i], px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)
+                    __pretty[x, y] = __wallSprites[flag] 
+                } else if(v == Type.panel) {
+                    __pretty[x, y] = __panelSprite
+                } else if(v == Type.floor) {
+                    __pretty[x, y] = __floorSprites[0]
                 }
+            }
+        }
+    }
+
+    static render() {
+        // Level.lightUp()
+        // generationRender()
+        var s = __tileSize  
+        var sx = (__width - 1) * -s / 2
+        var sy = (__height - 1)  * -s / 2
+        for (x in 0...__width) {
+            for (y in 0...__height) {
+                var r = __pretty[x, y]
+                var px = sx + x * s
+                var py = sy + y * s
+                var sprite = null
+                var lv = __light[x, y]
+                var color = Color.new(lv, lv, lv, 255)
+                Render.sprite(r, px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)
             }
         }
     }
@@ -132,7 +145,9 @@ class Level {
 
     static random { __random }
 
-    static contains(x, y) { __grid.valid(x, y) }    
+    static contains(x, y) { __grid.valid(x, y) } 
+
+    static pretty { __pretty }   
 
     static [x, y] { __grid[x, y] }
 
@@ -143,7 +158,7 @@ class Level {
     static [pos]=(v) { __grid[pos.x, pos.y] = v }
 
     static getLight(x, y) {
-        if(__light.valid(x, y)) {
+        if(__light.valid(x, y)) { 
             return __light[x, y]
         }
         return 0
@@ -564,7 +579,6 @@ class Hero is Character {
     }
 
     static debugRender() {
-        return
         var dbg = Data.getBool("Debug Draw", Data.debug)
         if(!dbg) {
             return
@@ -580,15 +594,15 @@ class Hero is Character {
                 var py = sy + y * s
                 var color = null
                 if (v == Type.empty) {
-                    Render.setColor(0x1111118F)  
+                    Render.setColor(0x111111FF)  
                 } else if (v == Type.wall) {
-                    Render.setColor(0x8383038F)
+                    Render.setColor(0x838303FF)
                 } else {
-                    Render.setColor(0x3333338F)
-                }
-                
-                Render.circle(px, py, 8, 32)
+                    Render.setColor(0x333333FF)
+                }                
+                Render.rect(px - 2, py - 2, px + 2, py + 2)
 
+                /*
                 for (t in Tile.get(x, y)) {
                     var tag = t.owner.tag
                     if (tag == Type.enemy) {
@@ -602,6 +616,7 @@ class Hero is Character {
                     px = px + 2
                     py = py + 2
                 }
+                */
             }
         }
 
