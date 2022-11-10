@@ -5,6 +5,9 @@ import random
 import colorsys
 import math
 
+seed = 1002797
+random.seed(seed)
+
 def roundrect(context, x, y, width, height, r):
     context.arc(x+r, y+r, r,
                 math.pi, 3*math.pi/2)
@@ -77,6 +80,6 @@ colorCtx.set_source_surface(stripesSurfClipped)
 colorCtx.rectangle(0, 0, width, height)
 colorCtx.fill()
 
-colorSurf.write_to_png("color.png")
+colorSurf.write_to_png("{}.png".format(seed))
 
 print("Done")

@@ -23,24 +23,24 @@ class Level {
         __emptySprite = Render.createGridSprite(tilesImage, 20, 24, 3, 0)
         __panelSprite = Render.createGridSprite(tilesImage, 21, 43, 134)
 
-
+        __tileSprites = GridSprite.new("[game]/assets/Tileset/DerelictTileset.png", 21, 43)
         __wallSprites = [
-            Render.createGridSprite(tilesImage, 21, 43, 22),    // 0000
-            Render.createGridSprite(tilesImage, 21, 43, 211),   // 0001
-            Render.createGridSprite(tilesImage, 21, 43, 27),    // 0010
-            Render.createGridSprite(tilesImage, 21, 43, 277),   // 0011
-            Render.createGridSprite(tilesImage, 21, 43, 169),   // 0100
-            Render.createGridSprite(tilesImage, 21, 43, 190),   // 0101
-            Render.createGridSprite(tilesImage, 21, 43, 109),   // 0110
-            Render.createGridSprite(tilesImage, 21, 43, 193),   // 0111
-            Render.createGridSprite(tilesImage, 21, 43, 29),    // 1000
-            Render.createGridSprite(tilesImage, 21, 43, 283),   // 1001
-            Render.createGridSprite(tilesImage, 21, 43, 28),    // 1010
-            Render.createGridSprite(tilesImage, 21, 43, 280),   // 1011
-            Render.createGridSprite(tilesImage, 21, 43, 115),   // 1100
-            Render.createGridSprite(tilesImage, 21, 43, 199),   // 1101
-            Render.createGridSprite(tilesImage, 21, 43, 112),   // 1110
-            Render.createGridSprite(tilesImage, 21, 43, 196)    // 1111
+            __tileSprites[22],    // 0000
+            __tileSprites[211],   // 0001
+            __tileSprites[27],    // 0010
+            __tileSprites[277],   // 0011
+            __tileSprites[169],   // 0100
+            __tileSprites[190],   // 0101
+            __tileSprites[109],   // 0110
+            __tileSprites[193],   // 0111
+            __tileSprites[29],    // 1000
+            __tileSprites[283],   // 1001
+            __tileSprites[28],    // 1010
+            __tileSprites[280],   // 1011
+            __tileSprites[115],   // 1100
+            __tileSprites[199],   // 1101
+            __tileSprites[112],   // 1110
+            __tileSprites[196]    // 1111
         ]
 
         __floorSprites = [
@@ -71,7 +71,7 @@ class Level {
     static lightUp() {
         var lights = Entity.withTagOverlap(Type.player | Type.light)
 
-        //var unlit = lights.count != 0 ? 100 : 150
+        //var unlit = lights.count != 0 ? 20 : 150
         var unlit = 255
 
         for (x in 0...__width) {
@@ -80,13 +80,14 @@ class Level {
             }
         }
         
+        var r  = 5
         for(l in lights) {
             var t  = l.getComponent(Tile)
-            for(x in (t.x-3)..(t.x+3)) {
-                for(y in (t.y-3)..(t.y+3)) {
+            for(x in (t.x-r)..(t.x+r)) {
+                for(y in (t.y-r)..(t.y+r)) {
                     if(__light.valid(x, y)) {
                         var d = Vec2.distance(Vec2.new(t.x, t.y), Vec2.new(x, y))
-                        __light[x, y] = Math.max(255 - d * 56, __light[x, y])
+                        __light[x, y] = Math.max(255 - (d - 1) * 56, __light[x, y])
                     }
                 }
             }
@@ -118,8 +119,29 @@ class Level {
         }
     }
 
+    static makeWalls() {
+        for (x in 0...__width) {
+            for (y in 0...__height) {
+                var v = __grid[x, y]
+                if(v == Type.empty) {
+                    __pretty[x, y] = __emptySprite
+                } else if(v == Type.wall) {
+                    var pos = Vec2.new(x, y)  
+                    var flag = 0
+                    for(i in 0...4) {
+                        var n = pos + Directions[i]
+                        if(__grid.valid(n.x, n.y) && __grid[n.x, n.y] == Type.wall) {
+                            flag = flag | 1 << i  // |
+                        }
+                    }
+                    __pretty[x, y] = __wallSprites[flag] 
+                }
+            }
+        }        
+    }
+
     static render() {
-        // Level.lightUp()
+        Level.lightUp()
         // generationRender()
         var s = __tileSize  
         var sx = (__width - 1) * -s / 2
@@ -163,6 +185,8 @@ class Level {
         }
         return 0
     }
+
+    
 }
 
 class Tile is Component {
@@ -556,7 +580,7 @@ class Hero is Character {
         if(__turnFiber.isDone) {
             if(__turn == playerTurn) {
                 __turn = computerTurn
-                __turnFiber = Fiber.new { Monster.turn() }
+                __turnFiber = Fiber.new { Hero.turn() /*Monster.turn()*/ }
             } else if(__turn == computerTurn) {
                 __turn = playerTurn
                 __turnFiber = Fiber.new { Hero.turn() }

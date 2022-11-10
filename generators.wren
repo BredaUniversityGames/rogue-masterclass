@@ -44,10 +44,17 @@ class BSP {
         // Split the whole level (recursively) to room
         split(Vec2.new(0, 0), Vec2.new(Level.width, Level.height))
 
+        Level.lightUp()
+        // Level.generationRender()
+
         makeRooms()     // Carve out the rooms
+        
         // Data.setBool("Debug Draw", false, Data.debug)
         makeHalls()     // Connect the rooms
+
+        Level.makeWalls()
         //postProcess()   // Remove extra wall tiles
+        //Level.generationRender()
         addHero()       // Put our player on the map
         // fillRoms()      // Add stuff to the rooms
 
@@ -97,24 +104,29 @@ class BSP {
             // room.to.y   = room.to.y - 2
 
             // Carve out rooms
+
+            
+
             for (x in room.from.x...room.to.x) {
                 for (y in room.from.y...room.to.y) {
                     Level[x, y] = Type.floor
+                    Level.pretty[x, y] = Render.createGridSprite(__tilesImage, 21, 43, 632)
                 }                
             }
 
-            /*
             for (x in room.from.x...room.to.x) {
-                for (y in (room.from.y - 2)...room.to.y) {
-                    //Level[x, y] = Type.panel
-                }                
+                // for (y in (room.to.y - 2)...room.to.y) {
+                Level[x, room.to.y - 2] = Type.panel
+                Level.pretty[x, room.to.y - 2] = Render.createGridSprite(__tilesImage, 21, 43, 162)
+                Level[x, room.to.y - 1] = Type.panel
+                Level.pretty[x, room.to.y - 1] = Render.createGridSprite(__tilesImage, 21, 43, 162 - 21)
+                //}                
             }
-            */
             Fiber.yield(brake)                    
         }
 
         System.print("rooms: %(__rooms.count)")
-    }
+    }   
 
     static makeHalls() {
         var brake = Data.getNumber("Long Brake")
@@ -125,23 +137,63 @@ class BSP {
             var dir = perp.perp
 
             var list = List.new() 
-            list.addAll(0...len)
+            list.addAll(0...len) 
             while(list.count > 0) {
-                var i = list.removeAt((list.count / 2).floor)
+                var i = 0
+                if(dir.x == 0) {
+                    i = list.removeAt((list.count  / 2).floor)
+                } else {
+                   // i = list.removeAt(__random.int(0, list.count - 3))
+                    i = list.removeAt(0)
+                }
+                // for(i in (len - 2)...0) {
                 var mid = Math.lerp(hall.from, hall.to, i / len)
                 mid.x = mid.x.round
                 mid.y = mid.y.round
                 var midp = mid + perp
-                var up = mid + dir * -1
-                var down = mid + dir * 1
-                var upp = midp + dir * -1
-                var downp = midp + dir * 1
+                var up = mid + dir * -3
+                var down = mid + dir * 3
+                var upp = midp + dir * -3
+                var downp = midp + dir * 3
                 if( Level[up.x, up.y] == Type.floor &&
                     Level[down.x, down.y] == Type.floor &&
                     Level[upp.x, upp.y] == Type.floor &&
                     Level[downp.x, downp.y] == Type.floor) {
                         Level[mid.x, mid.y] = Type.floor
                         Level[midp.x, midp.y] = Type.floor
+                        if(dir.x == 0) {
+                            System.print("Vertical")
+                            Level[mid.x, mid.y - 1] = Type.floor
+                            Level[midp.x, midp.y - 1] = Type.floor
+                            Level[mid.x, mid.y - 2] = Type.floor
+                            Level[midp.x, midp.y - 2] = Type.floor
+                            Level.pretty[mid.x, mid.y] = Render.createGridSprite(__tilesImage, 21, 43, 632)
+                            Level.pretty[midp.x, midp.y] = Render.createGridSprite(__tilesImage, 21, 43, 632)
+                            Level.pretty[mid.x, mid.y - 1] = Render.createGridSprite(__tilesImage, 21, 43, 632)
+                            Level.pretty[midp.x, midp.y - 1] = Render.createGridSprite(__tilesImage, 21, 43, 632)
+                            Level.pretty[mid.x, mid.y - 2] = Render.createGridSprite(__tilesImage, 21, 43, 786)
+                            Level.pretty[midp.x, midp.y - 2] = Render.createGridSprite(__tilesImage, 21, 43, 786)
+
+                            Level.pretty[mid.x, mid.y] = Render.createGridSprite(__tilesImage, 21, 43, 632)
+                            Level.pretty[midp.x, midp.y] = Render.createGridSprite(__tilesImage, 21, 43, 632)
+
+                            //Level.pretty[mid.x, mid.y + 1] = Render.createGridSprite(__tilesImage, 21, 43, 253)
+                            //Level.pretty[midp.x, midp.y + 2] = Render.createGridSprite(__tilesImage, 21, 43, 232)
+                        } else {
+                            Level.pretty[mid.x, mid.y] = Render.createGridSprite(__tilesImage, 21, 43, 706)
+                            Level.pretty[midp.x, midp.y] = Render.createGridSprite(__tilesImage, 21, 43, 706)
+
+                            Level.pretty[mid.x, mid.y + 2] = Render.createGridSprite(__tilesImage, 21, 43, 253)
+                            Level.pretty[mid.x, mid.y + 3] = Render.createGridSprite(__tilesImage, 21, 43, 232)
+
+                            Level[mid.x, mid.y + 2] = Type.panel
+                            Level[mid.x, mid.y + 3] = Type.panel
+                            
+                            // Level.pretty[midp.x, midp.y + 1] = Render.createGridSprite(__tilesImage, 21, 43, 232)
+
+                            // Level.pretty[mid.x, mid.y + 1] = Render.createGridSprite(__tilesImage, 21, 43, 253)
+                            //Level.pretty[midp.x, midp.y + 1] = Render.createGridSprite(__tilesImage, 21, 43, 232)
+                        }
                     break
                 }
             }

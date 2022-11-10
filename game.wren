@@ -63,8 +63,8 @@ class Game {
 
     static render() {       
         if(__state == Game.generating) {
-            Level.lightUp()
-            Level.generationRender()
+            // Level.lightUp()
+            // Level.generationRender()
         } 
         Level.render()
         Renderable.render()        
