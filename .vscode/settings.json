@@ -1,6 +1,16 @@
 {
     "wren.additionalModuleDirectories":
      [
-        "../xs/games/shared/modules",
-     ]
+        "../xs/games/shared/modules",     
+      ],
+      "activitusbar.alignment": "Right",
+     "activitusbar.inactiveColour": "activityBar.foreground",
+      "activitusbar.views": [        
+        {
+            "name": "task.xs",
+            "codicon": "game"
+        },
+
+      ]
+
 }
