@@ -9,15 +9,15 @@
     },
     "Level Height": {
         "type": "number",
-        "value": 23.0
+        "value": 12.0
     },
     "Level Width": {
         "type": "number",
-        "value": 40.0
+        "value": 24.0
     },
     "Long Brake": {
         "type": "number",
-        "value": 0.0
+        "value": 0.20000000298023224
     },
     "Monster Damage": {
         "type": "number",
@@ -29,15 +29,15 @@
     },
     "Move Speed": {
         "type": "number",
-        "value": 0.0
+        "value": 1.0
     },
     "Move Time": {
         "type": "number",
-        "value": 0.30000001192092896
+        "value": 0.003000000026077032
     },
     "Short Brake": {
         "type": "number",
-        "value": 0.0
+        "value": 0.10000000149011612
     },
     "Tile Size": {
         "type": "number",

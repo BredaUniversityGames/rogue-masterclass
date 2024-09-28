@@ -14,10 +14,8 @@ class Game {
     static playing      { 3 }
     static gameover     { 4 }
 
-    static config() { /* Using a file instead */ }
-
-    static  init() {
-        Entity.init()
+    static  initialize() {
+        Entity.initialize()
         Level.init()
         Tile.init()
         Create.init()

@@ -399,7 +399,7 @@ class BSPer {
         for(hall in __halls) {
             var dir = hall.to - hall.from
             var len = dir.magnitude.round
-            dir = dir.normalise
+            dir = dir.normal
             dir = dir.perp
 
             var list = List.new() 

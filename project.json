@@ -5,18 +5,30 @@
     },
     "Height": {
         "type": "number",
-        "value": 0.0
+        "value": 260.0
+    },
+    "Main": {
+        "type": "string",
+        "value": "game.wren"
     },
     "Multiplier": {
         "type": "number",
-        "value": 0.0
+        "value": 3.0
+    },
+    "Texture Filter": {
+        "type": "bool",
+        "value": false
+    },
+    "Texture Repeat": {
+        "type": "bool",
+        "value": false
     },
     "Title": {
         "type": "string",
-        "value": ""
+        "value": "Rogue Like"
     },
     "Width": {
         "type": "number",
-        "value": 0.0
+        "value": 440.0
     }
 }

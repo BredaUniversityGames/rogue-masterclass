@@ -20,10 +20,14 @@ class Level {
         var tilesImage = Render.loadImage("[game]/assets/tiles_dungeon.png")
         __emptySprite = Render.createGridSprite(tilesImage, 20, 24, 3, 0)
 
+        var r = 10
+        var c = 10
+        var tiles = Render.loadImage("[game]/assets/Dungeon_Tileset_v2.png")
+
         __wallSprites = [
-            Render.createGridSprite(tilesImage, 20, 24, 0, 8),      // 0000
-            Render.createGridSprite(tilesImage, 20, 24, 0, 11),     // 0001
-            Render.createGridSprite(tilesImage, 20, 24, 1, 8),      // 0010
+            Render.createGridSprite(tiles, r, c, 99),   // 0000
+            Render.createGridSprite(tiles, r, c, 99),   // 0001
+            Render.createGridSprite(tiles, r, c, 99),   // 0010
             Render.createGridSprite(tilesImage, 20, 24, 1, 10),     // 0011
             Render.createGridSprite(tilesImage, 20, 24, 0, 9),      // 0100
             Render.createGridSprite(tilesImage, 20, 24, 0, 10),     // 0101
@@ -31,16 +35,16 @@ class Level {
             Render.createGridSprite(tilesImage, 20, 24, 3, 11),     // 0111
             Render.createGridSprite(tilesImage, 20, 24, 3, 8),      // 1000
             Render.createGridSprite(tilesImage, 20, 24, 2, 10),     // 1001
-            Render.createGridSprite(tilesImage, 20, 24, 2, 8),      // 1010
+            Render.createGridSprite(tiles, r, c, 2),      // 1010
             Render.createGridSprite(tilesImage, 20, 24, 3, 10),     // 1011
             Render.createGridSprite(tilesImage, 20, 24, 2, 9),      // 1100
             Render.createGridSprite(tilesImage, 20, 24, 1, 11),     // 1101
             Render.createGridSprite(tilesImage, 20, 24, 2, 11),     // 1110
-            Render.createGridSprite(tilesImage, 20, 24, 3, 9)       // 1111
+            Render.createGridSprite(tiles, r, c, 55)       // 1111
         ]
 
         __floorSprites = [
-            Render.createGridSprite(tilesImage, 20, 24, 14, 8),
+            Render.createGridSprite(tiles, 20, 24, 14, 8),
             Render.createGridSprite(tilesImage, 20, 24, 15, 8),
             Render.createGridSprite(tilesImage, 20, 24, 14, 9),
             Render.createGridSprite(tilesImage, 20, 24, 15, 9)
@@ -92,7 +96,7 @@ class Level {
     }
 
     static render() {
-        Level.lightUp()
+        //Level.lightUp()
         var s = __tileSize  
         var sx = (__width - 1) * -s / 2
         var sy = (__height - 1)  * -s / 2
@@ -103,10 +107,10 @@ class Level {
                 var py = sy + y * s
                 var sprite = null
                 var lv = __light[x, y]
-                var color = Color.new(lv, lv, lv, 255)
+                var color = Color.new(255, 255, 255, 255)
                 if(v == Type.empty) {
                     Render.sprite(__emptySprite, px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)
-                } else if(v == Type.wall) {
+                } else /* if(v == Type.wall) */ {
                     var pos = Vec2.new(x, y)  
                     var flag = 0
                     for(i in 0...4) {
@@ -116,10 +120,10 @@ class Level {
                         }
                     }
                     Render.sprite(__wallSprites[flag], px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)                    
-                } else {
+                } /* else {
                     var i = (x + y) % __floorSprites.count
                     Render.sprite(__floorSprites[i], px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)
-                }
+                }*/
             }
         }
     }
@@ -212,7 +216,7 @@ class Tile is Component {
 
         var s = owner.getComponentSuper(Sprite)
         if(s != null) {
-            var l = Level.getLight(x, y)
+            var l = 255 // Level.getLight(x, y)
             s.mul = Color.new(l,l,l, 255).toNum
             s.layer = -tr.position.y + 1000 + _z
         }
