@@ -9,9 +9,16 @@
         "command": "C:/Users/encie/Documents/Games/xs/executable/x64/Debug/xs.exe",
         "group": "none",
         "problemMatcher": [],
-        "options": {
-          "cwd": "C:/Users/encie/Documents/Games/xs"
-        }
+        //"options": {
+        //  "cwd": "C:/Users/encie/Documents/Games/xs"
+        //}
+
+        "osx": {
+          "command": "open ~/Library/Developer/Xcode/DerivedData/xs-dltokjxziukglkcpqpkbyigdfmos/Build/Products/Debug/xs.app",
+          "options": {
+            "cwd": "../../Research/xs"
+          }
+        }      
       }
     ]
   }
