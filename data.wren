@@ -145,4 +145,66 @@ class Dequeue {
     empty() { _data.count == 0 }
  }
 
+ class Rule {
+    /// Creates a new rule with the given match and replace sparse grids (patterns).
+    /// The sparse grid define values for coordinates from 1 to -1 on both x and y axis
+    /// efefctively defining a 3x3 grid.s
+    /// The probablity of the rule being applied is 1.0 and the priority is 0.
+    construct new(match, replace) {
+        _match = match
+        _replace = replace
+        _probablity = 1.0
+        _priority = 0
+    }
+
+    probablity=(p) { _probablity = p }
+    probablity { _probablity }
+
+    priority=(p) { _priority = p }
+    priority { _priority }
+
+    match { _match }
+    replace { _replace }
+ }
+
+ class GridProcessor {
+
+    /// Creates a new grid processor with the given input and output grids.
+    construct new(input, output) {
+        _input = input
+        _output = output
+        _rules = []
+    }
+
+    /// Adds a rule to the grid processor.
+    addRule(rule) {
+        _rules.add(rule)
+    }
+
+    process() {
+        var width = _input.width
+        var height = _input.height
+        for(y in 0...height) {
+            for(x in 0...width) {
+
+                for(j in 1..-1) {
+                    for(i in 1..-1) {
+                        match[i,j] == _input[x+i, y+j]
+                    }
+                }
+                for(rule in _rules) {
+                    if(match == rule.match) {
+                        for(j in 1..-1) {
+                            for(i in 1..-1) {
+                                _output[x+i, y+j] = rule.replace[i,j]
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+ }
+
  
