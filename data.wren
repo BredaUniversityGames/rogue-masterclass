@@ -71,9 +71,11 @@ class SpraseGrid {
     construct new() {
         _grid = {}
     }
+    
+    /// Creates a unique identifier for a given cell position.
+    static makeId(x, y) { x << 16 | y }  
 
-    static makeId(x, y) { x << 16 | y }
-
+    /// Checks if a given cell position exists in the grid.
     has(x, y) {
         var id =  SpraseGrid.makeId(x, y)
         return _grid.containsKey(id)
@@ -96,9 +98,13 @@ class SpraseGrid {
         _grid[id] = v
     }
 
+    /// Clears the grid.
     clear() {
         _grid.clear()
     }
+
+    /// Returns the values stored in the grid.
+    values { _grid.values }
 }
 
 /// First-in-first-out (FIFO) data structure 

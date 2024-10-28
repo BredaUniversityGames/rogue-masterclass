@@ -469,7 +469,7 @@ class BSPer {
             var stuff = area / 26
             for(i in 0...stuff) {
                 var pos = findFree(room)
-                Create.something(pos.x, pos.y)
+                // Create.something(pos.x, pos.y)
                 Fiber.yield(brake)
             }
 
@@ -481,6 +481,7 @@ class BSPer {
             }
 
 
+            /*
             var lightable = []
             for(x in room.from.x...room.to.x) {
                 if(Level[x, room.to.y] == Type.wall) {
@@ -498,6 +499,7 @@ class BSPer {
                 Create.wallTorch(xl, room.to.y)
                 Create.wallTorch(xr, room.to.y)
             }
+            */
             
             Fiber.yield(brake)
         }
