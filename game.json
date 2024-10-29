@@ -1,4 +1,8 @@
 {
+    "From Color": {
+        "type": "color",
+        "value": 3187733247
+    },
     "Hero Damage": {
         "type": "number",
         "value": 10.0
@@ -42,5 +46,9 @@
     "Tile Size": {
         "type": "number",
         "value": 16.0
+    },
+    "To Color": {
+        "type": "color",
+        "value": 4289593599
     }
 }

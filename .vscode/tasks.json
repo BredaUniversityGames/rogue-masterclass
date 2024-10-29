@@ -6,11 +6,11 @@
       {
         "label": "xs",
         "type": "process",
-        "command": "D:/Research/xs/executable/x64/Debug/xs.exe",
+        "command": "C:/Users/encie/Documents/Games/xs/executable/x64/Debug/xs.exe",
         "group": "none",
         "problemMatcher": [],
         "options": {
-          "cwd": "D:/Research/xs"
+          "cwd": "C:/Users/encie/Documents/Games/xs"
         }
       }
     ]

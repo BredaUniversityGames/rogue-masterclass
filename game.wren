@@ -11,6 +11,7 @@ import "xs_components" for Transform, Body, Renderable, Sprite, GridSprite, Anim
 import "types" for Type
 import "directions" for Directions
 import "gameplay" for Level
+import "background" for Background
 
 // There needs class called Game in you main file
 class Game {
@@ -31,11 +32,12 @@ class Game {
         Tile.init()
         Create.init()
         Gameplay.init()
-        
+                
         __time = 0        
         __state = generating // Skip loading
         __alg = BSPer
         __genFiber =  Fiber.new { __alg.generate() }
+        __background = Background.new()
     }   
     
     // Update the game, which means updating all the systems
@@ -49,6 +51,7 @@ class Game {
 
         Entity.update(dt)        
         __alg.debugRender()
+        __background.update(dt)
     }
 
     // This function is called when the game is in the generating state
@@ -75,7 +78,8 @@ class Game {
 
     // Render the game, which means rendering all the systems and entities
     static render() {    
-        if(__state == Game.generating || true) {
+        __background.render()
+        if(__state == Game.generating) {
             Level.preview()     // This will render the level grid with the current generation progress
         } else {
             Level.render()      // This will render the level grid

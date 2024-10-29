@@ -139,12 +139,10 @@ class Level {
                         Render.sprite(__previewTiles[tl.owner.tag], pos.x, pos.y, -pos.y, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
                     }
                 } else {
-                    /*
                     var sprite = __previewTiles[t]
                     if(sprite != null) {
                         Render.sprite(sprite, px, py, -py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
                     }
-                    */
                 }                
             }
         }
