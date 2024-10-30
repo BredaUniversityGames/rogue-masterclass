@@ -19,44 +19,17 @@ class Create {
         e.addComponent(c)
     }
 
-    static character(x, y, image) {
+    static character(x, y) {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
-        var s = AnimatedSprite.new(image, 4, 11, 15) // Same image for all
         var tl = Tile.new(x, y)
-        var f = 0
-        s.addAnimation("idle",          [f,f,f,f,f,f,f,f,f+1,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+1,f+1,f+1])
-        f = f + 4
-        s.addAnimation("selected",      [f,f,f,f,f,f,f,f,f+1,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+2,f+1,f+1,f+1])
-        f = f + 4
-        s.addAnimation("walk down",     [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
-        f = f + 4
-        s.addAnimation("walk side",     [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
-        f = f + 4
-        s.addAnimation("walk up",       [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
-        f = f + 4
-        s.addAnimation("attack down",   [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
-        f = f + 4
-        s.addAnimation("attack side",   [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
-        f = f + 4
-        s.addAnimation("attack up",     [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
-        f = f + 4
-        s.addAnimation("pain down",     [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
-        f = f + 4
-        s.addAnimation("pain side",     [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
-        f = f + 4
-        s.addAnimation("pain up",       [f,f,f,f+1,f+1,f+1,f+2,f+2,f+2,f+3,f+3,f+3])
-        s.playAnimation("idle")
-        s.randomizeFrame(__random)
-        s.flags = Render.spriteCenter
         entity.addComponent(t)
-        entity.addComponent(s)        
         entity.addComponent(tl)
         return entity
     }
 
     static hero(x, y) {
-        var entity = character(x, y, "[game]/assets/chara_hero.png")
+        var entity = character(x, y)
         var h = Hero.new()
         entity.addComponent(h)
         entity.tag = Type.player
@@ -65,23 +38,11 @@ class Create {
     }
 
     static monster(x, y) {
-
-        var imgs = [
-            "[game]/assets/chara_bat.png",
-            "[game]/assets/chara_orc.png",
-            "[game]/assets/chara_goblin.png",
-            "[game]/assets/chara_spider.png",
-            "[game]/assets/chara_slime.png",
-            "[game]/assets/chara_troll.png"
-        ]
-
-        var i = __random.int(0, imgs.count)
-        // var img = imgs[i]
-        var entity = character(x, y, imgs[i])
+        var entity = character(x, y)
         var s = Monster.new()
         entity.addComponent(s)
         entity.tag = Type.enemy
-        entity.name = "S%(nextID)"
+        entity.name = "M%(nextID)"
         return entity
     }
 
@@ -97,12 +58,9 @@ class Create {
     static crate() {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
-        var s = GridSprite.new("[game]/assets/tiles_dungeon.png", 20, 24)
-        s.idx = 368
         var tl = Tile.new(x, y)
         s.flags = Render.spriteCenter
         entity.addComponent(t)
-        entity.addComponent(s)        
         entity.addComponent(tl)
         entity.tag = Type.wall
         entity.name = "C%(nextID)"
@@ -110,41 +68,14 @@ class Create {
     }
     
     static pillar(x, y, fire) {
-        {   // Pillar 
-            var entity = Entity.new()
-            var pos = Level.calculatePos(x, y) + Vec2.new(0, Level.tileSize / 2)
-            var t = Transform.new(pos)
-            var s = GridSprite.new("[game]/assets/tiles_dungeon.png", 20, 12)
-            if(fire) {
-                s.idx = 185
-            } else {
-                s.idx = 187
-            }
-            var tl = Tile.new(x, y)
-            s.flags = Render.spriteCenter
-            entity.addComponent(t)
-            entity.addComponent(s)        
-            entity.addComponent(tl)
-            entity.tag = Type.wall
-            entity.name = "P%(nextID)"
-        }
-        if(fire){
-            var entity = Entity.new()
-            var pos = Level.calculatePos(x, y) + Vec2.new(0, Level.tileSize / 2)
-            var t = Transform.new(pos)
-            var tl = Tile.new(x, y)
-            tl.z = 0.1
-            var s = AnimatedSprite.new("[game]/assets/tiles_dungeon.png", 20, 12, 5)
-            s.addAnimation("burn", [180, 181, 182, 183])
-            s.playAnimation("burn")
-            s.mode = AnimatedSprite.loop
-            s.flags = Render.spriteCenter
-            entity.addComponent(t)
-            entity.addComponent(tl)
-            entity.addComponent(s)        
-            entity.name = "F%(nextID)"
-            entity.tag = Type.light
-        }
+        var entity = Entity.new()
+        var pos = Level.calculatePos(x, y) + Vec2.new(0, Level.tileSize / 2)
+        var t = Transform.new(pos)
+        var tl = Tile.new(x, y)
+        entity.addComponent(t)
+        entity.addComponent(tl)
+        entity.tag = Type.wall
+        entity.name = "P%(nextID)"
     }
 
     static wallTorch(x, y) {
@@ -153,14 +84,8 @@ class Create {
         var t = Transform.new(pos)
         var tl = Tile.new(x, y)
         tl.z = 0.1
-        var s = AnimatedSprite.new("[game]/assets/tiles_dungeon.png", 20, 12, 5)
-        s.addAnimation("burn", [180, 181, 182, 183])
-        s.playAnimation("burn")
-        s.mode = AnimatedSprite.loop
-        s.flags = Render.spriteCenter
         entity.addComponent(t)
         entity.addComponent(tl)
-        entity.addComponent(s)        
         entity.name = "T%(nextID)"
         entity.tag = Type.light
     }
@@ -168,29 +93,20 @@ class Create {
     static something(x, y) {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
-        var s = GridSprite.new("[game]/assets/tiles_dungeon.png", 20, 24)
-        var stuff = [356, 357, 358, 396, 397, 398]
-        var idx = __random.int(0, stuff.count)
-        s.idx = stuff[idx]
         var tl = Tile.new(x, y)
-        s.flags = Render.spriteCenter
         entity.addComponent(t)
-        entity.addComponent(s)        
         entity.addComponent(tl)
         entity.tag = Type.wall
-        entity.name = "F%(nextID)"
+        entity.name = "S%(nextID)"
         return entity
     }
 
     static treasure(x, y) {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
-        var s = GridSprite.new("[game]/assets/tiles_dungeon.png", 20, 24)
-        s.idx = 354
         var tl = Tile.new(x, y)
         s.flags = Render.spriteCenter
         entity.addComponent(t)
-        entity.addComponent(s)        
         entity.addComponent(tl)
         entity.tag = Type.wall | Type.light
         entity.name = "F%(nextID)"
@@ -200,18 +116,15 @@ class Create {
     static door(x, y, vertical) {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
-        var s = GridSprite.new("[game]/assets/tiles_dungeon.png", 20, 24)
-        s.idx = vertical ? 235 : 234
         var tl = Tile.new(x, y)
-        s.flags = Render.spriteCenter
         entity.addComponent(t)
-        entity.addComponent(s)        
         entity.addComponent(tl)
         entity.tag = Type.door
         entity.name = "F%(nextID)"
         return entity
     }
 
+    /*
     static healthbar() {
         {
             var entity = Entity.new()
@@ -237,6 +150,7 @@ class Create {
             return entity
         }
     }
+    */
 }
 
 import "gameplay" for Hero, Monster, Tile, Level, Camera

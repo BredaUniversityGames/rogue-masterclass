@@ -1,11 +1,11 @@
 {
     "Always on top": {
         "type": "bool",
-        "value": false
+        "value": true
     },
     "Height": {
         "type": "number",
-        "value": 260.0
+        "value": 360.0
     },
     "Main": {
         "type": "string",
@@ -13,7 +13,7 @@
     },
     "Multiplier": {
         "type": "number",
-        "value": 3.0
+        "value": 2.0
     },
     "Texture Filter": {
         "type": "bool",
@@ -29,6 +29,6 @@
     },
     "Width": {
         "type": "number",
-        "value": 440.0
+        "value": 640.0
     }
 }

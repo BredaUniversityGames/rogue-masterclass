@@ -16,44 +16,11 @@ class Level {
         __width = Data.getNumber("Level Width", Data.game)
         __height = Data.getNumber("Level Height", Data.game)
 
-        __grid = Grid.new(__width, __height, Type.empty)
-
-        var tilesImage = Render.loadImage("[game]/assets/tiles_dungeon.png")
-        __emptySprite = Render.createGridSprite(tilesImage, 20, 24, 3, 0)
-
-        var r = 10
-        var c = 10
-        var tiles = Render.loadImage("[game]/assets/Dungeon_Tileset_v2.png")
-
-        __wallSprites = [
-            Render.createGridSprite(tiles, r, c, 99),               // 0000
-            Render.createGridSprite(tiles, r, c, 99),               // 0001
-            Render.createGridSprite(tiles, r, c, 99),               // 0010
-            Render.createGridSprite(tilesImage, 20, 24, 1, 10),     // 0011
-            Render.createGridSprite(tilesImage, 20, 24, 0, 9),      // 0100
-            Render.createGridSprite(tilesImage, 20, 24, 0, 10),     // 0101
-            Render.createGridSprite(tilesImage, 20, 24, 1, 9),      // 0110
-            Render.createGridSprite(tilesImage, 20, 24, 3, 11),     // 0111
-            Render.createGridSprite(tilesImage, 20, 24, 3, 8),      // 1000
-            Render.createGridSprite(tilesImage, 20, 24, 2, 10),     // 1001
-            Render.createGridSprite(tiles, r, c, 2),                // 1010
-            Render.createGridSprite(tilesImage, 20, 24, 3, 10),     // 1011
-            Render.createGridSprite(tilesImage, 20, 24, 2, 9),      // 1100
-            Render.createGridSprite(tilesImage, 20, 24, 1, 11),     // 1101
-            Render.createGridSprite(tilesImage, 20, 24, 2, 11),     // 1110
-            Render.createGridSprite(tiles, r, c, 55)                // 1111
-        ]
-
-        __floorSprites = [
-            Render.createGridSprite(tiles, 20, 24, 14, 8),
-            Render.createGridSprite(tilesImage, 20, 24, 15, 8),
-            Render.createGridSprite(tilesImage, 20, 24, 14, 9),
-            Render.createGridSprite(tilesImage, 20, 24, 15, 9)
-        ]
+        __grid = Grid.new(__width, __height, Type.empty)        
 
         var preview = Render.loadImage("[game]/assets/monochrome-transparent_packed.png")
-        r = 49
-        c = 22
+        var r = 49
+        var c = 22
         __previewTiles = {
             Type.empty: Render.createGridSprite(preview, r, c, 624),
             Type.floor: Render.createGridSprite(preview, r, c, 68),
@@ -94,56 +61,26 @@ class Level {
     static render() {
         var s = __tileSize  
         var sx = (__width - 1) * -s / 2
-        var sy = (__height - 1)  * -s / 2
-        for (x in 0...__width) {
-            for (y in 0...__height) {
-                var v = __grid[x, y]
-                var px = sx + x * s
-                var py = sy + y * s
-                var sprite = null
-                var color = Color.new(255, 255, 255, 255)
-                if(v == Type.empty) {
-                    Render.sprite(__emptySprite, px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)
-                } else /* if(v == Type.wall) */ {
-                    var pos = Vec2.new(x, y)  
-                    var flag = 0
-                    for(i in 0...4) {
-                        var n = pos + Directions[i]
-                        if(__grid.valid(n.x, n.y) && __grid[n.x, n.y] == Type.wall) {
-                            flag = flag | 1 << i  // |
-                        }
-                    }
-                    Render.sprite(__wallSprites[flag], px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)                    
-                } /* else {
-                    var i = (x + y) % __floorSprites.count
-                    Render.sprite(__floorSprites[i], px, py, -py, 1.0, 0.0, color.toNum, 0x0, Render.spriteCenter)
-                }*/
-            }
-        }
-    }
-
-    static preview() {
-        var s = __tileSize  
-        var sx = (__width - 1) * -s / 2
         var sy = (__height - 1)  * -s / 2        
         for (x in 0...__width) {
             for (y in 0...__height) {
                 var px = sx + x * s
-                var py = sy + y * s        
+                var py = sy + y * s
                 var t = __grid[x, y]
 
                 var tile = Tile.get(x, y)
                 if(tile.count > 0) {
                     for(tl in tile) {
                         var pos = Level.calculatePos(tl)
-                        Render.sprite(__previewTiles[tl.owner.tag], pos.x, pos.y, -pos.y, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
+                        Render.sprite(__previewTiles[tl.owner.tag], pos.x, pos.y, 0.0, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
                     }
                 } else {
                     var sprite = __previewTiles[t]
                     if(sprite != null) {
-                        Render.sprite(sprite, px, py, -py, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
+                        Render.sprite(sprite, px, py, 0.0, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
                     }
-                }                
+                }
+
             }
         }
     }
@@ -235,13 +172,6 @@ class Tile is Component {
                 tr.position = Math.lerp(from, to, _t)
             }            
         }
-
-        var s = owner.getComponentSuper(Sprite)
-        if(s != null) {
-            var l = 255 // Level.getLight(x, y)
-            s.mul = Color.new(l,l,l, 255).toNum
-            s.layer = -tr.position.y + 1000 + _z
-        }
     }
 
     move(dx, dy, time) {
@@ -278,11 +208,6 @@ class Character is Component {
         _damage = damage
         _state = Character.idle
         _direction = Directions.downIdx
-        _flags = [  Render.spriteCenter,
-                    Render.spriteCenter,
-                    Render.spriteCenter,
-                    Render.spriteCenter | Render.spriteFlipX] 
-        _anims = [  "up" , "side", "down", "side"]
         __stateNames = ["W", "S", "M", "A", "P"]
     }
 
@@ -292,14 +217,6 @@ class Character is Component {
     }
 
     update(dt) {
-        // This is the same as having a character controller where after every action/animation it goes to idle
-        if((_state == Character.attacking || _state == Character.moving || _state == Character.pain) &&
-            _anim.isDone && !_tile.moving) {
-            _state = Character.idle
-            _anim.playAnimation("idle")
-            _anim.mode = AnimatedSprite.loop
-        }
-
         if(_health <= 0) {
             owner.delete()
         }
@@ -332,18 +249,12 @@ class Character is Component {
         //System.print("Moving from position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         var d = Directions[dir]
         _tile.move(d.x, d.y, 0.3) //TODO: Take this from Data
-        _anim.playAnimation("walk " + _anims[dir])
-        _anim.flags = _flags[dir]
-        _anim.mode = AnimatedSprite.once
         _state = Character.moving
     }
 
     attackTile(dir) {
         System.print("Attacking from position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         _state = Character.attacking
-        _anim.playAnimation("attack " + _anims[dir])
-        _anim.flags = _flags[dir]
-        _anim.mode = AnimatedSprite.once
         var d = Directions[dir]
         var x = _tile.x + d.x
         var y = _tile.y + d.y
@@ -358,9 +269,6 @@ class Character is Component {
     recieveAttack(dir, damage) {        
         System.print("Getting pain position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         dir = (dir + 2) % 4
-        _anim.playAnimation("pain " + _anims[dir])
-        _anim.mode = AnimatedSprite.once
-        _anim.flags = _flags[dir]
         _state = Character.pain
         _health = _health - damage
     }
@@ -391,6 +299,7 @@ class Hero is Character {
     }
 
     turn() {        
+        System.print("Hero turn")
         if(state == Character.selected) {
             var dir = getDirection()
             if(dir >= 0) {
@@ -400,6 +309,7 @@ class Hero is Character {
                 } else if(!checkTile(dir, Type.blocking)) {
                     moveTile(dir)
                 }
+                state = Character.idle
             }    
         } else if (state == Character.idle) {
             return true   
@@ -420,7 +330,7 @@ class Hero is Character {
         if(Hero.hero) {
             var hero = Hero.hero.getComponent(Hero)
             hero.select()
-            while(true && Hero.hero != null) {
+            while(Hero.hero != null) {
                 if(hero.turn()) {
                     return
                 }
@@ -479,17 +389,15 @@ class Hero is Character {
     }
 
     static turn() {
-        floodFill()
+        floodFill()        
         Fiber.yield()
         var enemies = Entity.withTagOverlap(Type.enemy)
         for(e in enemies) {
             var s = e.getComponent(Monster)
             s.select()
-            s.turn()
-            var wait = s.state == Character.attacking ? 12 : 8
-            for(i in  1...wait) {
-                Fiber.yield()
-            }
+            s.turn()            
+            Fiber.yield()
+            System.print("Monster turn")
         }
     }
 

@@ -35,7 +35,7 @@ class Game {
                 
         __time = 0        
         __state = generating // Skip loading
-        __alg = BSPer
+        __alg = Randy
         __genFiber =  Fiber.new { __alg.generate() }
         __background = Background.new()
     }   
@@ -79,12 +79,7 @@ class Game {
     // Render the game, which means rendering all the systems and entities
     static render() {    
         __background.render()
-        if(__state == Game.generating) {
-            Level.preview()     // This will render the level grid with the current generation progress
-        } else {
-            Level.render()      // This will render the level grid
-            Renderable.render() // This will render all the entities that have a Renderable component
-        }        
+        Level.render()
     }
  }
 
