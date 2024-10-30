@@ -5,6 +5,52 @@ import "types" for Type
 import "directions" for Directions
 import "random" for Random
 
+class SingleRoom {
+
+    static generate(){
+        //get some data that we will use later
+        var shortBrake = Data.getNumber("Short Brake")
+        var longBrake = Data.getNumber("Long Brake")
+        var width = Level.width
+        var height = Level.height
+
+        // Init all tiles to floor
+        for (x in 0...width) {
+            for (y in 0...height) {
+                Level[x, y] = Type.floor
+            }
+            Fiber.yield(shortBrake) //Wait for duration "shortBrake"
+        }
+
+        // Top and bottom to wall
+        for (x in 0...width) {
+            Level[x, 0] = Type.wall
+            Level[x, height-1] = Type.wall
+            Fiber.yield(shortBrake)
+        }
+
+        // Left and right edge to wall
+        for (y in 0...height) {
+            Level[0, y] = Type.wall
+            Level[width-1, y] = Type.wall
+            Fiber.yield(shortBrake)
+        }
+
+        Fiber.yield(longBrake)      
+        
+        //create gameplay objects
+        Create.monster(15,15)
+        Fiber.yield(shortBrake)      
+        Create.hero(5,5)
+
+        return 0.0
+    }
+
+    //this function is required in the class but you don't need to use/implement it
+    static debugRender() {}
+}
+
+
 class Randy {
 
     static generate() {
@@ -15,7 +61,7 @@ class Randy {
         var width = Level.width
         var height = Level.height
 
-        // Init all tiles to floow
+        // Init all tiles to floor
         for (x in 0...width) {
             for (y in 0...height) {
                 Level[x, y] = Type.floor

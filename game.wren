@@ -35,7 +35,7 @@ class Game {
                 
         __time = 0        
         __state = generating // Skip loading
-        __alg = BSPer
+        __alg = SingleRoom //Set this variable to change to another type of generator
         __genFiber =  Fiber.new { __alg.generate() }
         __background = Background.new()
     }   
@@ -85,5 +85,5 @@ class Game {
 
 /// Import classes from other files that might have circular dependencies (import each other)
 import "create" for Create
-import "generators" for Randy, BSPer, RandomWalk
+import "generators" for SingleRoom, Randy, BSPer, RandomWalk    //If you create a new Generator then add it's classname here 
 import "gameplay" for Hero, Tile, Gameplay
