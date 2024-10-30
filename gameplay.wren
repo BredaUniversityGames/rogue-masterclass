@@ -152,17 +152,11 @@ class Tile is Component {
 }
 
 class Character is Component {
-    static idle         { 0 }
-    static selected     { 1 }
-    static moving       { 2 }
-    static attacking    { 3 }
-    static pain         { 4 }
 
     construct new(attackable, health, damage) {
         _attackable = attackable
         _health = health
         _damage = damage
-        _state = Character.idle
         _direction = Directions.downIdx
         __stateNames = ["W", "S", "M", "A", "P"]
     }
@@ -201,12 +195,10 @@ class Character is Component {
     moveTile(dir) {
         var d = Directions[dir]
         _tile.move(d.x, d.y)
-        _state = Character.moving
     }
 
     attackTile(dir) {
         System.print("Attacking from position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
-        _state = Character.attacking
         var d = Directions[dir]
         var x = _tile.x + d.x
         var y = _tile.y + d.y
@@ -222,16 +214,9 @@ class Character is Component {
     recieveAttack(dir, damage) {        
         System.print("Getting pain position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         dir = (dir + 2) % 4
-        _state = Character.pain
         _health = _health - damage
     }
 
-    select() {
-        _state = Character.selected
-    }
-
-    state { _state }
-    state=(v) { _state = v}
     tile { _tile }
     health { _health }
     damage { _damage }
@@ -285,23 +270,15 @@ class Hero is Character {
     }
 
     turn() {
-        if(state == Character.selected) {
-            var dir = getDirection()                                                         
-            if(dir >= 0) {
-                _direction = Directions[dir]
-                if(checkTile(dir, Type.player)) {
-                    attackTile(dir)
-                } else if(!checkTile(dir, Type.blocking)) {
-                    moveTile(dir)
-                }
-            } else {
-                state = Character.idle
-                return true
+        var dir = getDirection()                                                         
+        if(dir >= 0) {
+            _direction = Directions[dir]
+            if(checkTile(dir, Type.player)) {
+                attackTile(dir)
+            } else if(!checkTile(dir, Type.blocking)) {
+                moveTile(dir)
             }
-        } else if (state == Character.idle) {
-            return true   
-        }
-        return false
+        } 
     }
 
     getDirection() {
@@ -314,12 +291,10 @@ class Hero is Character {
     }
 
     static turn() {
-        var enemies = Entity.withTagOverlap(Type.enemy)
-        
+        var enemies = Entity.withTagOverlap(Type.enemy)        
         for(e in enemies) {
             floodFill()
             var s = e.getComponent(Monster)
-            s.select()
             s.turn()                        
         }
         return true
