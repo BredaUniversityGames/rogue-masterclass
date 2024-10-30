@@ -84,5 +84,5 @@ class Game {
 
 /// Import classes from other files that might have circular dependencies (import each other)
 import "create" for Create
-import "generators" for SingleRoom, Randy, BSPer, RandomWalk    //If you create a new Generator then add it's classname here 
+import "generators" for SingleRoom, Randy, BSPer, RandomWalk, MyRandomWalker    //If you create a new Generator then add it's classname here 
 import "gameplay" for Hero, Tile, Gameplay
