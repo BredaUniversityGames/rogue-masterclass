@@ -18,11 +18,11 @@ class Background {
         fromColor = Color.fromNum(fromColor)
         toColor = Color.fromNum(toColor)
         for(i in 0...16) {            
-            var x = (i + 1) * -128 + 640
-            var offset = (_time + i ).sin * 40.0
+            var x = (i + 1) * -64 + 320
+            var offset = (_time + i ).sin * 10.0
             var t = i / 16  
             var color = fromColor * (1 - t) + toColor * t
-            Render.sprite(_sprite, x + offset, -360, -i - 100, 320, Math.pi * -0.25, color.toNum, 0x00000000, 0)    
+            Render.sprite(_sprite, x + offset, -180, -i - 100, 200, Math.pi * -0.25, color.toNum, 0x00000000, 0)    
         }
     }
 }

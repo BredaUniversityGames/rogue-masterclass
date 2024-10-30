@@ -323,15 +323,12 @@ class BSPer {
                 Level[x, y] = Type.wall
             }
             Fiber.yield(0.0)
-        }        
-
-        Data.setBool("Debug Draw", true, Data.debug)
+        }
 
         // Split the whole level (recursively) to room
         split(Vec2.new(0, 0), Vec2.new(Level.width, Level.height))
 
         makeRooms()     // Carve out the rooms
-        Data.setBool("Debug Draw", false, Data.debug)
         makeHalls()     // Connect the rooms
         postProcess()   // Remove extra wall tiles
         addHero()       // Put our player on the map
@@ -344,11 +341,12 @@ class BSPer {
     static split(from, to) {
         var shortBrake = Data.getNumber("Short Brake")
         var longBrake = Data.getNumber("Long Brake")
+        var maxRoomSize = Data.getNumber("BSP Max Room Size")
         var padd = 4 // Leave this much on both sides when cutting
         var dx = to.x - from.x
         var dy = to.y - from.y
 
-        if(dx > 11 || dy > 11) { // Room is too big, cut in half
+        if(dx > maxRoomSize || dy > maxRoomSize) {                                 // Room is too big, cut in half
             if(dx >= dy) {  // Horizontal split
                 var spl = __random.int(from.x + padd, to.x - padd)                  // Rand split along x
                 __halls.add(Rect.new(Vec2.new(spl, from.y), Vec2.new(spl, to.y)))   // Add divide for a hall later

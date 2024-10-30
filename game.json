@@ -1,4 +1,12 @@
 {
+    "BSP Max Room Size": {
+        "type": "number",
+        "value": 13.0
+    },
+    "Enemy Color": {
+        "type": "color",
+        "value": 16776447
+    },
     "From Color": {
         "type": "color",
         "value": 3187733247
@@ -39,6 +47,10 @@
         "type": "number",
         "value": 0.003000000026077032
     },
+    "Player Color": {
+        "type": "color",
+        "value": 4294066175
+    },
     "Short Brake": {
         "type": "number",
         "value": 0.003000000026077032
@@ -49,6 +61,6 @@
     },
     "To Color": {
         "type": "color",
-        "value": 4289593599
+        "value": 857972223
     }
 }

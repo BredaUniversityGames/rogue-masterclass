@@ -21,7 +21,7 @@ class Level {
         var preview = Render.loadImage("[game]/assets/monochrome-transparent_packed.png")
         var r = 49
         var c = 22
-        __previewTiles = {
+        __tiles = {
             Type.empty: Render.createGridSprite(preview, r, c, 624),
             Type.floor: Render.createGridSprite(preview, r, c, 68),
             Type.wall: Render.createGridSprite(preview, r, c, 843),
@@ -35,6 +35,14 @@ class Level {
             Type.pot: Render.createGridSprite(preview, r, c, 259),
             Type.stairs: Render.createGridSprite(preview, r, c, 259),
             Type.light: Render.createGridSprite(preview, r, c, 259)
+        }
+
+        __colors = {
+            Type.empty: 0xFFFFFF80,
+            Type.floor: 0xFFFFFFA0,
+            Type.player: Data.getColor("Player Color", Data.game),
+            Type.enemy: Data.getColor("Enemy Color", Data.game)
+
         }
     }
 
@@ -67,17 +75,19 @@ class Level {
                 var px = sx + x * s
                 var py = sy + y * s
                 var t = __grid[x, y]
-
-                var tile = Tile.get(x, y)
+                var tile = Tile.get(x, y)                
                 if(tile.count > 0) {
                     for(tl in tile) {
                         var pos = Level.calculatePos(tl)
-                        Render.sprite(__previewTiles[tl.owner.tag], pos.x, pos.y, 0.0, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
+                        var sprite = __tiles[tl.owner.tag]
+                        var color = __colors[tl.owner.tag] == null ? 0xFFFFFFFF : __colors[tl.owner.tag]
+                        Render.sprite(sprite, pos.x, pos.y, 0.0, 1.0, 0.0, color, 0x0, Render.spriteCenter)
                     }
                 } else {
-                    var sprite = __previewTiles[t]
+                    var sprite = __tiles[t]
+                    var color = __colors[t] == null ? 0xFFFFFFFF : __colors[t]
                     if(sprite != null) {
-                        Render.sprite(sprite, px, py, 0.0, 1.0, 0.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
+                        Render.sprite(sprite, px, py, 0.0, 1.0, 0.0, color, 0x0, Render.spriteCenter)
                     }
                 }
 
@@ -175,6 +185,7 @@ class Tile is Component {
     }
 
     move(dx, dy, time) {
+        Tile.move(_x, _y, _toX, _toY, this)
         if(!moving) {
             _toX = _x + dx
             _toY = _y + dy
@@ -248,7 +259,7 @@ class Character is Component {
     moveTile(dir) {
         //System.print("Moving from position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         var d = Directions[dir]
-        _tile.move(d.x, d.y, 0.3) //TODO: Take this from Data
+        _tile.move(d.x, d.y, 0.03) //TODO: Take this from Data
         _state = Character.moving
     }
 
@@ -499,10 +510,7 @@ class Hero is Character {
 
     static debugRender() {
         return
-        var dbg = Data.getBool("Debug Draw", Data.debug)
-        if(!dbg) {
-            return
-        }
+        if(!Data.getBool("Debug Draw", Data.debug)) return
 
         var s = Level.tileSize  
         var sx = (Level.width - 1) * -s / 2
