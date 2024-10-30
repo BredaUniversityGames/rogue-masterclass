@@ -507,7 +507,7 @@ class BSPer {
         for(i in 1...100) {
             var x = __random.int(rect.from.x, rect.to.x)
             var y = __random.int(rect.from.y, rect.to.y)
-            if(Level.contains(x, y) && Level[x, y] == Type.floor && Tile.get(x,y).count == 0) {
+            if(Level.contains(x, y) && Level[x, y] == Type.floor && Tile.get(x,y) == null) {
                 return Vec2.new(x,y)
             }
         }

@@ -42,7 +42,6 @@ class Level {
             Type.floor: 0xFFFFFFA0,
             Type.player: Data.getColor("Player Color", Data.game),
             Type.enemy: Data.getColor("Enemy Color", Data.game)
-
         }
     }
 
@@ -76,13 +75,11 @@ class Level {
                 var py = sy + y * s
                 var t = __grid[x, y]
                 var tile = Tile.get(x, y)                
-                if(tile.count > 0) {
-                    for(tl in tile) {
-                        var pos = Level.calculatePos(tl)
-                        var sprite = __tiles[tl.owner.tag]
-                        var color = __colors[tl.owner.tag] == null ? 0xFFFFFFFF : __colors[tl.owner.tag]
-                        Render.sprite(sprite, pos.x, pos.y, 0.0, 1.0, 0.0, color, 0x0, Render.spriteCenter)
-                    }
+                if(tile != null) {                    
+                    var pos = Level.calculatePos(tile)
+                    var sprite = __tiles[tile.owner.tag]
+                    var color = __colors[tile.owner.tag] == null ? 0xFFFFFFFF : __colors[tile.owner.tag]
+                    Render.sprite(sprite, pos.x, pos.y, 0.0, 1.0, 0.0, color, 0x0, Render.spriteCenter)
                 } else {
                     var sprite = __tiles[t]
                     var color = __colors[t] == null ? 0xFFFFFFFF : __colors[t]
@@ -90,7 +87,6 @@ class Level {
                         Render.sprite(sprite, px, py, 0.0, 1.0, 0.0, color, 0x0, Render.spriteCenter)
                     }
                 }
-
             }
         }
     }
@@ -121,90 +117,39 @@ class Level {
     }
 }
 
+// A compenent that represents a tile in the level
+// It is used to store the position of the tile in the level
+// but also to store all the tiles in the level as a static variable
 class Tile is Component {
     static init() {
         __tiles = SpraseGrid.new()
     }
 
-    static add(x, y, tile) {
-        if(!__tiles.has(x, y)) {
-            __tiles[x, y] = []
-        }
-        var l = __tiles[x, y]
-        l.add(tile)
-        __tiles[x, y] = l
-    }
-
-    static remove(x, y, tile) {
-        if(__tiles.has(x, y)) {
-            var l = __tiles[x, y]
-            l.removeAt(l.indexOf(tile))
-        }
-    }
-
-    static move(fx, fy, tx, ty, tile) {
-        remove(fx, fy, tile)
-        add(tx, ty, tile)
-    }
-
     static get(x, y) {
-        if(__tiles.has(x, y)) {
-            return __tiles[x, y]
-        }
-        return []
+        if(__tiles.has(x, y)) return __tiles[x, y]
+        return null
     }
-
-    static tiles { __tiles }
 
     construct new(x, y) {
         _x = x
         _y = y
-        _z = 0
-        _toX = x
-        _toY = y
-        _t = 0
-        Tile.add(x, y, this)
+        __tiles[x, y] = this
     }
 
-    update(dt) {
-        var tr = owner.getComponent(Transform)
-
-        if(moving) {
-            _t = _t + dt * _invT 
-            if(_t >= 1) {               
-                _t = 0
-                _x = _toX
-                _y = _toY
-                tr.position = Level.calculatePos(_x, _y)
-            } else {
-                var from = Level.calculatePos(_x, _y)
-                var to = Level.calculatePos(_toX, _toY)
-                tr.position = Math.lerp(from, to, _t)
-            }            
-        }
-    }
-
-    move(dx, dy, time) {
-        Tile.move(_x, _y, _toX, _toY, this)
-        if(!moving) {
-            _toX = _x + dx
-            _toY = _y + dy
-            _invT = 1 / time
-            Tile.move(_x, _y, _toX, _toY, this)
-        }
+    move(dx, dy) {  
+        __tiles.remove(_x, _y)
+        _x = _x + dx
+        _y = _y + dy
+        __tiles[_x, _y] = this              
     }
 
     finalize() {
-        Tile.remove(_x, _y, this)
+        __tiles.remove(_x, _y)
     }
     
     x { _x }
     y { _y }
-    z { _z }
-    z=(v) { _z = v }
-    moving { _x != _toX ||  _y != _toY }
 }
-
 
 class Character is Component {
     static idle         { 0 }
@@ -248,18 +193,14 @@ class Character is Component {
         var x = _tile.x + d.x
         var y = _tile.y + d.y
         var flag = Level[x, y]
-        for(t in Tile.get(x, y)) {
-            // System.print("tile=[%(t.x), %(t.y)] name=%(t.owner.name) tag=%(t.owner.tag) )")    
-            flag = flag | t.owner.tag // |
-        }
-        // System.print("loc=[%(x),%(y)] type=%(type) flag=%(flag) res=%(Bits.checkBitFlagOverlap(type, flag))")
+        var t = Tile.get(x, y)
+        if(t != null) flag = flag | t.owner.tag // |
         return Bits.checkBitFlagOverlap(type, flag)
     }
 
     moveTile(dir) {
-        //System.print("Moving from position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         var d = Directions[dir]
-        _tile.move(d.x, d.y, 0.03) //TODO: Take this from Data
+        _tile.move(d.x, d.y)
         _state = Character.moving
     }
 
@@ -269,7 +210,8 @@ class Character is Component {
         var d = Directions[dir]
         var x = _tile.x + d.x
         var y = _tile.y + d.y
-        for(t in Tile.get(x, y)) {
+        var t = Tile.get(x, y)
+        if(t != null) {
             if(Bits.checkBitFlag(_attackable, t.owner.tag)) {
                 var c = t.owner.getComponentSuper(Character)
                 c.recieveAttack(dir, _damage)
@@ -285,7 +227,6 @@ class Character is Component {
     }
 
     select() {
-        //System.print("Select %(owner.name)")
         _state = Character.selected
     }
 
@@ -307,24 +248,20 @@ class Hero is Character {
                     Input.keyRight,
                     Input.keyDown,
                     Input.keyLeft]
+        __hero = this
     }
 
-    turn() {        
-        System.print("Hero turn")
-        if(state == Character.selected) {
-            var dir = getDirection()
-            if(dir >= 0) {
-                _direction = Directions[dir]
-                if(checkTile(dir, Type.enemy)) {
-                    attackTile(dir)
-                } else if(!checkTile(dir, Type.blocking)) {
-                    moveTile(dir)
-                }
-                state = Character.idle
-            }    
-        } else if (state == Character.idle) {
-            return true   
-        }
+    turn() {     
+        var dir = getDirection()
+        if(dir >= 0) {
+            _direction = Directions[dir]
+            if(checkTile(dir, Type.enemy)) {
+                attackTile(dir)
+            } else if(!checkTile(dir, Type.blocking)) {
+                moveTile(dir)
+            }
+            return true
+        }    
         return false
     }
 
@@ -337,30 +274,9 @@ class Hero is Character {
         return -1
     }
 
-    static turn() {
-        if(Hero.hero) {
-            var hero = Hero.hero.getComponent(Hero)
-            hero.select()
-            while(Hero.hero != null) {
-                if(hero.turn()) {
-                    return
-                }
-                Fiber.yield()
-            }
-        }
-    }
+    static turn() { __hero.turn() }
 
-    static hero {
-        if(__hero != null) {
-            return __hero
-        }
-        var pls = Entity.withTagOverlap(Type.player)
-        if(pls.count == 1) {
-            __hero = pls[0]            
-        }
-        return __hero
-    }
-
+    static hero { __hero }
  }
 
  class Monster is Character {
@@ -379,7 +295,6 @@ class Hero is Character {
                     moveTile(dir)
                 }
             } else {
-                // System.print("Monster %(owner.name) is going to idle")
                 state = Character.idle
                 return true
             }
@@ -390,7 +305,6 @@ class Hero is Character {
     }
 
     getDirection() {
-        // System.print("getting Direction for %(owner.name)")
         if(__fill) {
             if(__fill.has(tile.x, tile.y)) {
                 return __fill[tile.x, tile.y]
@@ -400,21 +314,20 @@ class Hero is Character {
     }
 
     static turn() {
-        floodFill()        
-        Fiber.yield()
         var enemies = Entity.withTagOverlap(Type.enemy)
+        
         for(e in enemies) {
+            floodFill()
             var s = e.getComponent(Monster)
             s.select()
-            s.turn()            
-            Fiber.yield()
-            System.print("Monster turn")
+            s.turn()                        
         }
+        return true
     }
 
     static floodFill() {
         if(Hero.hero) {
-            var hero = Hero.hero.getComponent(Tile)
+            var hero = Hero.hero.owner.getComponent(Tile)
             var open = Queue.new()
             open.push(Vec2.new(hero.x, hero.y))
             __fill = SpraseGrid.new()
@@ -433,7 +346,6 @@ class Hero is Character {
                     }                     
                 }
                 count = count - 1
-                Fiber.yield(0.0)
             }   
         }
     }
@@ -455,101 +367,37 @@ class Hero is Character {
     }
  }
 
- class Camera is Component {
-    construct new() {
-        System.print("new")
-    }
-
-    update(dt) {
-        return
-        var pls = Entity.withTag(Type.player)
-        if(pls.count != 0) {
-            var p = pls[0]
-            var t = p.getComponent(Transform)
-            Render.setOffset(-t.position.x, -t.position.y) 
-        }
-    }
- }
-
  class Gameplay {
-    static generating   { 0 }
     static playerTurn   { 1 }
     static computerTurn { 2 }
 
     static init() {
-        __turn = computerTurn
-        __turnFiber = Fiber.new { }
-        //var ui = Create.healthbar()
+        __state = playerTurn
     }    
 
     static update(dt) {
-        if(__turnFiber.isDone) {
-            if(__turn == playerTurn) {
-                __turn = computerTurn
-                __turnFiber = Fiber.new { Monster.turn() }
-            } else if(__turn == computerTurn) {
-                __turn = playerTurn
-                __turnFiber = Fiber.new { Hero.turn() }
-            }    
-        } else {
-            __turnFiber.call()
+
+        if(__state == Gameplay.playerTurn) {
+            if(Hero.turn()) {
+                __state = Gameplay.computerTurn
+            }
+        } else if(__state == Gameplay.computerTurn) {
+            if(Monster.turn()) {
+                __state = Gameplay.playerTurn
+            }            
         }
     }
 
     static getFlags(x, y) {
         if(Level.contains(x, y)) {
             var flag = Level[x, y]
-            for(t in Tile.get(x, y)) {
-                flag = flag | t.owner.tag // |
-            }
+            var t = Tile.get(x, y)
+            if(t != null) flag = flag | t.owner.tag // |
             return flag
         } else {
             return
         }
-    }
-
-    static debugRender() {
-        return
-        if(!Data.getBool("Debug Draw", Data.debug)) return
-
-        var s = Level.tileSize  
-        var sx = (Level.width - 1) * -s / 2
-        var sy = (Level.height - 1) * -s / 2
-        for (x in 0...Level.width) {
-            for (y in 0...Level.height) {
-                var v = Level[x, y]
-                var px = sx + x * s
-                var py = sy + y * s
-                var color = null
-                if (v == Type.empty) {
-                    Render.setColor(0x1111118F)  
-                } else if (v == Type.wall) {
-                    Render.setColor(0x8383038F)
-                } else {
-                    Render.setColor(0x3333338F)
-                }
-                
-                Render.circle(px, py, 8, 32)
-
-                for (t in Tile.get(x, y)) {
-                    var tag = t.owner.tag
-                    if (tag == Type.enemy) {
-                        Render.setColor(0x1111FF8F)  
-                    } else if (tag == Type.player) {
-                        Render.setColor(0x11FF338F)
-                    } else {
-                        Render.setColor(0x3333338F)
-                    }
-                    Render.disk(px, py, 2.0, 9)
-                    px = px + 2
-                    py = py + 2
-                }
-            }
-        }
-
-        Render.setColor(0xFF0000FF)
-        Monster.debugRender()
-    }
+    }    
  }
 
 import "create" for Create 

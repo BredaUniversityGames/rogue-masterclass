@@ -42,7 +42,6 @@ class Game {
     
     // Update the game, which means updating all the systems
     static update(dt) {  
-        Gameplay.debugRender()
         if(__state == Game.generating) {
             genStep(dt)
         } else {

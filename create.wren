@@ -13,12 +13,6 @@ class Create {
         __id = 0
     }
 
-    static camera() {
-        var e = Entity.new()
-        var c = Camera.new()
-        e.addComponent(c)
-    }
-
     static character(x, y) {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
@@ -153,4 +147,4 @@ class Create {
     */
 }
 
-import "gameplay" for Hero, Monster, Tile, Level, Camera
+import "gameplay" for Hero, Monster, Tile, Level
