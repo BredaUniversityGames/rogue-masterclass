@@ -158,7 +158,6 @@ class Character is Component {
         _health = health
         _damage = damage
         _direction = Directions.downIdx
-        __stateNames = ["W", "S", "M", "A", "P"]
     }
 
     initialize() {
@@ -174,9 +173,7 @@ class Character is Component {
         if(Data.getBool("Debug Draw", Data.debug)) {
             var pos = Level.calculatePos(_tile)
             Render.setColor(0xFFFFFFFF)
-            var state = __stateNames[_state]
             Render.shapeText("%(owner.name)", pos.x - 7, pos.y + 7, 1)
-            Render.shapeText("%(state)", pos.x - 7, pos.y, 1)
         }
     }
 
