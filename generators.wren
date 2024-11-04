@@ -568,7 +568,7 @@ class BSPer {
         var off = Vec2.new(Level.tileSize, Level.tileSize) * -0.5
         for(room in __rooms) {         
             var color = __colors[(room.from.x + room.from.y + room.to.x + room.to.y) % __colors.count]
-            Render.setColor(color)
+            Render.dbgColor(color)
 
             var from = Level.calculatePos(
                 room.from.x,
@@ -576,19 +576,19 @@ class BSPer {
             var to = Level.calculatePos(
                 room.to.x,
                 room.to.y) + off                        
-            Render.rect(from.x + 1, from.y + 1, to.x - 1, to.y- 1)
+            Render.dbgRect(from.x + 1, from.y + 1, to.x - 1, to.y- 1)
         }
 
         for(hall in __halls) {         
             var color = __colors[(hall.from.x + hall.from.y + hall.to.x + hall.to.y) % __colors.count]
-            Render.setColor(color | 0x000000FF) // Make opaque |
+            Render.dbgColor(color | 0x000000FF) // Make opaque |
             var from = Level.calculatePos(
                 hall.from.x,
                 hall.from.y) + off
             var to = Level.calculatePos(
                 hall.to.x,
                 hall.to.y) + off                        
-            Render.line(from.x, from.y, to.x, to.y)            
+            Render.dbgLine(from.x, from.y, to.x, to.y)            
         }
     }
 

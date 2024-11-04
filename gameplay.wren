@@ -172,8 +172,8 @@ class Character is Component {
 
         if(Data.getBool("Debug Draw", Data.debug)) {
             var pos = Level.calculatePos(_tile)
-            Render.setColor(0xFFFFFFFF)
-            Render.shapeText("%(owner.name)", pos.x - 7, pos.y + 7, 1)
+            Render.dbgColor(0xFFFFFFFF)
+            Render.dbgText("%(owner.name)", pos.x - 7, pos.y + 7, 1)
         }
     }
 
@@ -323,7 +323,7 @@ class Hero is Character {
     }
 
     static debugRender() { 
-        Render.setColor(0xFF0000FF)    
+        Render.dbgColor(0xFF0000FF)    
         if(__fill != null) { 
             for (x in 0...Level.width) {
                 for (y in 0...Level.height) {
