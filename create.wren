@@ -117,34 +117,6 @@ class Create {
         entity.name = "F%(nextID)"
         return entity
     }
-
-    /*
-    static healthbar() {
-        {
-            var entity = Entity.new()
-            var t = Transform.new(Vec2.new(-152, 65))
-            var s = Sprite.new("[game]/assets/health_bar_decoration.png")
-            s.layer = 10000
-            s.flags = Render.spriteOverlay
-            entity.addComponent(t)
-            entity.addComponent(s)        
-            entity.name = "HealthbarBg %(nextID)"
-        }
-        {
-            var entity = Entity.new()
-            var t = Transform.new(Vec2.new(-138, 65))
-            var s = GridSprite.new("[game]/assets/health_bar.png", 1, 11)
-            s.layer = 10001
-            s.flags = Render.spriteOverlay
-            var h = Healthbar.new()
-            entity.addComponent(t)
-            entity.addComponent(s) 
-            entity.addComponent(h)        
-            entity.name = "Healthbar %(nextID)"
-            return entity
-        }
-    }
-    */
 }
 
 import "gameplay" for Hero, Monster, Tile, Level

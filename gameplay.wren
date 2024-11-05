@@ -179,6 +179,7 @@ class Character is Component {
 
     turn() { true }  // Implement turn logic here one and return true when done
 
+    /// Check if the tile in the direction has a given type flag
     checkTile(dir, type) {
         var d = Directions[dir]
         var x = _tile.x + d.x
@@ -189,11 +190,13 @@ class Character is Component {
         return Bits.checkBitFlagOverlap(type, flag)
     }
 
+    /// Move the tile in the direction
     moveTile(dir) {
         var d = Directions[dir]
         _tile.move(d.x, d.y)
     }
 
+    /// Attack the tile in the direction
     attackTile(dir) {
         System.print("Attacking from position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         var d = Directions[dir]
@@ -208,6 +211,7 @@ class Character is Component {
         }
     }
 
+    /// Recieve an attack from a direction
     recieveAttack(dir, damage) {        
         System.print("Getting pain position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         dir = (dir + 2) % 4
