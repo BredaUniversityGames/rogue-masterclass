@@ -4,6 +4,7 @@ import "xs_assert" for Assert
 import "xs_ec"for Entity, Component
 import "xs_components" for Transform, Body, Renderable, Sprite, GridSprite, AnimatedSprite
 import "xs_containers" for Grid, SpraseGrid, Queue
+import "xs_tools" for Tools
 import "random" for Random
 import "types" for Type
 import "directions" for Directions
@@ -14,7 +15,7 @@ class Level {
     
     /// Initialize the level with the data from the game
     /// Must be called before using the Level class
-    static init() {
+    static initialize() {
         __tileSize = Data.getNumber("Tile Size", Data.game)
         __width = Data.getNumber("Level Width", Data.game)
         __height = Data.getNumber("Level Height", Data.game)
@@ -78,7 +79,7 @@ class Level {
 class Tile is Component {
 
     /// Must be called from the game before using the Tile class
-    static init() {
+    static initialize() {
         __tiles = SpraseGrid.new()
     }
 
@@ -92,6 +93,7 @@ class Tile is Component {
     construct new(x, y) {
         _x = x
         _y = y
+        System.print("Creating tile at position [%(x),%(y)]")
         __tiles[x, y] = this
     }
 
@@ -105,7 +107,10 @@ class Tile is Component {
 
     /// Remove the tile from the level (gets called when the entity is deleted)
     finalize() {
-        __tiles.remove(_x, _y)
+        // Check if the tile has not been replaced already
+        if(__tiles[_x, _y] == this) {
+            __tiles.remove(_x, _y)
+        }
     }
     
     /// Get the x position of the tile
@@ -116,32 +121,33 @@ class Tile is Component {
 }
 
 class Stats is Component {
-    construct new(health, damage, armor, dodge, drop) {
+    construct new(health, damage, armor, drop) {
         _health = health    // Health points
         _damage = damage    // Damage points
         _armor = armor      // Armor points
-        _dodge = dodge      // Probability of dodging an attack
+        _drop = drop        // Drop chance
+
     }
 
+    /*
     update(dt) {
         if(_health <= 0) owner.delete()
     }
+    */
 
     /// Clone the stats - used to create a copy of the stats and modify them
     /// without changing the original. Useful for creating new entities with
     /// similar stats
-    clone() { Stats.new(_health, _damage, _armor, _dodge, _drop) }
+    clone() { Stats.new(_health, _damage, _armor, _drop) }
 
     health { _health }
     damage { _damage }
     armor { _armor }
-    dodge { _dodge }
     drop { _drop }
 
     health=(v) { _health = v }
     damage=(v) { _damage = v }
     armor=(v) { _armor = v }
-    dodge=(v) { _dodge = v }
     drop=(v) { _drop = v }
 }
 
@@ -198,24 +204,30 @@ class Character is Component {
         var t = Tile.get(x, y)
         if(t != null) {
             if(Bits.checkBitFlag(_attackable, t.owner.tag)) {
-                var c = t.owner.get(Character)
+                var stats = t.owner.get(Stats)
+                var hitChance = 0.8 - stats.armor * 0.1 
+                var hit = Tools.random.float(0.0, 1.0) < hitChance
+                if(hit) {
+                    stats.health = stats.health - _stats.damage
+                    Gameplay.message =  "%(owner.name) deals %(_stats.damage) damage to %(t.owner.name)"
+                } else {
+                    Gameplay.message = "%(owner.name) misses %(t.owner.name)"
+                }
 
+                if(stats.health <= 0) {
+                    Gameplay.message = "%(owner.name) kills %(t.owner.name)"
+                    t.owner.delete()
 
-                c.recieveAttack(dir, _stats)
+                    //if(Tools.random.float(0.0, 1.0) < stats.drop) {
+                    {
+                        var item = Create.item(x, y)
+                    }
+                }
+            } else if(Bits.checkBitFlag(Type.item, t.owner.tag)) {
+                Gameplay.message = "%(owner.name) hits a wall"
             }
+
         }
-    }
-
-    /// Recieve an attack from a direction
-    recieveAttack(dir, stats) {
-
-        Gameplay.message = "Attacked from direction [%(dir)]"
-
-        // System.print("Getting pain position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
-
-        //System.print("Getting pain position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
-        dir = (dir + 2) % 4
-        _stats.health = _stats.health - stats.damage
     }
 
     /// Get the tile of the character
@@ -270,7 +282,9 @@ class Hero is Character {
     }
 
     /// Player singleton turn
-    static turn() { __hero.turn() }
+    static turn() {
+        if(__hero) return __hero.turn()
+    }
 
     /// Get the hero singleton
     static hero { __hero }
@@ -369,7 +383,7 @@ class Gameplay {
     static playerTurn   { 1 }
     static computerTurn { 2 }
 
-    static init() {
+    static initialize() {
         __state = playerTurn
         __font = Render.loadFont("[game]/assets/FutilePro.ttf", 14)
 
@@ -398,7 +412,8 @@ class Gameplay {
             Type.snake: Render.createGridSprite(preview, r, c, 420),
             Type.helmet: Render.createGridSprite(preview, r, c, 33),
             Type.armor: Render.createGridSprite(preview, r, c, 82),
-            Type.sword: Render.createGridSprite(preview, r, c, 130)
+            Type.sword: Render.createGridSprite(preview, r, c, 130),
+            Type.food: Render.createGridSprite(preview, r, c, 817)
         }
 
         var enemyColor = Data.getColor("Enemy Color", Data.game)
@@ -417,7 +432,8 @@ class Gameplay {
             Type.snake: enemyColor,
             Type.helmet: itemColor,
             Type.armor: itemColor,
-            Type.sword: itemColor            
+            Type.sword: itemColor,     
+            Type.food: itemColor       
         }
 
         __message = "A hero is born"

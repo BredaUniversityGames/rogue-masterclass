@@ -11,7 +11,7 @@ import "types" for Type
 /// As a game programming pattern, it is a factory class
 class Create {
 
-    static init() {
+    static initialize() {
         __random = Random.new()
         __id = 0
 
@@ -25,15 +25,25 @@ class Create {
             Type.snake: "Snake"
         }
         __monsterStats = {
-            Type.bat: Stats.new(1, 1, 0, 0, 0),
-            Type.spider: Stats.new(1, 1, 0, 0, 0.5),
-            Type.ghost: Stats.new(2, 1, 0, 0, 0.5),
-            Type.boss: Stats.new(4, 1, 0, 0, 0),
-            Type.scorpion: Stats.new(5, 1, 0, 0, 0),
-            Type.snake: Stats.new(5, 2, 0, 0, 0)
+            Type.bat: Stats.new(1, 1, 0, 0.2),
+            Type.spider: Stats.new(1, 1, 0, 0.5),
+            Type.ghost: Stats.new(2, 1, 0, 0.5),
+            Type.boss: Stats.new(4, 1, 0, 1),
+            Type.scorpion: Stats.new(1, 1, 1, 0.2),
+            Type.snake: Stats.new(1, 2, 0, 0.75)
         }
-
-
+        __itemNames = {
+            Type.helmet: "Helmet",
+            Type.armor: "Armor",
+            Type.sword: "Sword",
+            Type.food: "Food"
+        }
+        __itemStats = {
+            Type.helmet: Stats.new(0, 0, 1, 0),
+            Type.armor: Stats.new(0, 0, 2, 0),
+            Type.sword: Stats.new(0, 1, 0, 0),
+            Type.food: Stats.new(1, 0, 0, 0)
+        }
     }
 
     static character(x, y) {
@@ -49,7 +59,7 @@ class Create {
         var entity = character(x, y)
         var h = Hero.new()
         entity.add(h)
-        var s = Stats.new(10, 1, 0, 0, 0)
+        var s = Stats.new(10, 1, 0, 0)
         entity.add(s)
         entity.tag = Type.player
         entity.name = "Hero"
@@ -60,11 +70,26 @@ class Create {
         var entity = character(x, y)
         var m = Monster.new()
         entity.add(m)
-        var type = Tools.pickOne([Type.bat, Type.spider, Type.ghost, Type.boss, Type.scorpion, Type.snake])
+        var type = Tools.pickOne([
+            Type.bat, Type.spider, Type.ghost,
+            Type.boss, Type.scorpion, Type.snake])
         var s = __monsterStats[type].clone()
         entity.add(s)
         entity.tag = type
         entity.name = __monsterNames[type]
+        return entity
+    }
+
+    static item(x, y) {
+        var entity = Entity.new()
+        var tl = Transform.new(Level.calculatePos(x, y))
+        entity.add(tl)
+        var t = Tile.new(x, y)
+        entity.add(t)
+        var type = Tools.pickOne([
+            Type.helmet, Type.armor, Type.sword, Type.food])
+        entity.tag = type
+        entity.name = __itemNames[type]
         return entity
     }
 

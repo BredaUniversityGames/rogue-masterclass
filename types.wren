@@ -20,11 +20,12 @@ class Type {
     static helmet   { 1 << 18 }
     static armor    { 1 << 19 }
     static sword    { 1 << 20 }
+    static food     { 1 << 21 }
         
     // Combine multiple types
     static monster { (bat | spider | ghost | boss | scorpion | snake) }
     static enemy   { monster }
-    static item    { (helmet | armor | sword) }
+    static item    { (helmet | armor | sword | food) }
     static block   { (wall | player | enemy | door) }
     static attackable   { (enemy | item) }
     static blocking     { (wall | enemy | door | player) }

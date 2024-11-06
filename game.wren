@@ -28,10 +28,10 @@ class Game {
     // and some variables that are used in the game`s logic
     static initialize() {
         Entity.initialize()
-        Level.init()
-        Tile.init()
-        Create.init()
-        Gameplay.init()
+        Level.initialize()
+        Tile.initialize()
+        Create.initialize()
+        Gameplay.initialize()
                 
         __time = 0        
         __state = generating // Skip loading
