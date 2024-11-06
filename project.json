@@ -13,7 +13,11 @@
     },
     "Multiplier": {
         "type": "number",
-        "value": 2.0
+        "value": 3.0
+    },
+    "Snap to pixels": {
+        "type": "bool",
+        "value": false
     },
     "Texture Filter": {
         "type": "bool",
@@ -30,5 +34,9 @@
     "Width": {
         "type": "number",
         "value": 640.0
+    },
+    "Window size in points": {
+        "type": "bool",
+        "value": false
     }
 }

@@ -3,7 +3,6 @@ class Type {
     static floor    { 1 << 0 }
     static wall     { 1 << 1 }
     static player   { 1 << 2 }
-    static enemy    { 1 << 3 }
     static door     { 1 << 4 }
     static lever    { 1 << 5 }
     static spikes   { 1 << 6 }
@@ -12,8 +11,22 @@ class Type {
     static pot      { 1 << 9 }
     static stairs   { 1 << 10 }
     static light    { 1 << 11 }
-//  static attackable   { enemy }
+    static bat      { 1 << 12 }
+    static spider   { 1 << 13 }
+    static ghost    { 1 << 14 }
+    static boss     { 1 << 15 }
+    static scorpion { 1 << 16 }
+    static snake    { 1 << 17 }
+    static helmet   { 1 << 18 }
+    static armor    { 1 << 19 }
+    static sword    { 1 << 20 }
+        
+    // Combine multiple types
+    static monster { (bat | spider | ghost | boss | scorpion | snake) }
+    static enemy   { monster }
+    static item    { (helmet | armor | sword) }
+    static block   { (wall | player | enemy | door) }
+    static attackable   { (enemy | item) }
     static blocking     { (wall | enemy | door | player) }
-//  static character    { (player | enemy) }
-    static monsterBlock { (wall | light | pot | chest) }
+    static monsterBlock { (wall | light | pot | chest | item) }
 }

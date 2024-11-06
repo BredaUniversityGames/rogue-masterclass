@@ -2,6 +2,7 @@ import "xs" for Data, Input, Render
 import "xs_math"for Math, Bits, Vec2, Color
 import "xs_ec"for Entity, Component
 import "xs_components" for Transform, Body, Renderable, Sprite, GridSprite, AnimatedSprite
+import "xs_tools" for Tools
 import "random" for Random
 import "types" for Type
 import "ui" for Healthbar
@@ -35,7 +36,7 @@ class Create {
         var entity = character(x, y)
         var s = Monster.new()
         entity.addComponent(s)
-        entity.tag = Type.enemy
+        entity.tag = Tools.pickOne([Type.bat, Type.spider, Type.ghost, Type.boss, Type.scorpion, Type.snake])
         entity.name = "M%(nextID)"
         return entity
     }

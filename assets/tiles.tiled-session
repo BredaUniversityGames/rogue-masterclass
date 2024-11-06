@@ -1,0 +1,18 @@
+{
+    "activeFile": "",
+    "expandedProjectPaths": [
+    ],
+    "fileStates": {
+    },
+    "last.imagePath": "/Users/bojanendrovski/Documents/Games/rogue-masterclass/assets",
+    "openFiles": [
+    ],
+    "project": "tiles.tiled-project",
+    "recentFiles": [
+    ],
+    "tileset.lastUsedFormat": "tsx",
+    "tileset.tileSize": {
+        "height": 16,
+        "width": 16
+    }
+}
