@@ -8,8 +8,12 @@ import "random" for Random
 import "types" for Type
 import "directions" for Directions
 
+/// Contains the level data and the logic to manipulate it
+/// It's completely static and should be used as a singleton
 class Level {    
     
+    /// Initialize the level with the data from the game
+    /// Must be called before using the Level class
     static init() {
         __tileSize = Data.getNumber("Tile Size", Data.game)
         __width = Data.getNumber("Level Width", Data.game)
@@ -17,10 +21,12 @@ class Level {
         __grid = Grid.new(__width, __height, Type.empty)        
     }
 
+    /// Calculate the position of a tile in the level
     static calculatePos(tile) {
         return calculatePos(tile.x, tile.y)
     }
 
+    /// Calculate the position of a tile in the level
     static calculatePos(tx, ty) {
         var sx = (__width - 1) * -__tileSize / 2.0
         var sy = (__height - 1)  * -__tileSize / 2.0
@@ -29,6 +35,7 @@ class Level {
         return Vec2.new(px, py)        
     }
 
+    /// Calculate the tile position of a given position in the level
     static calculateTile(pos) {
         var sx = (__width - 1.0) * -__tileSize / 2.0
         var sy = (__height - 1.0)  * -__tileSize / 2.0
@@ -37,22 +44,31 @@ class Level {
         return Vec2.new(tx.round, ty.round)
     }
 
+    /// Get the tile at a given position (used for rendering)
     static tileSize { __tileSize }
     
+    /// Get the width of the level (in tiles)
     static width { __width }
 
+    /// Get the height of the level (in tiles)
     static height { __height }
 
+    /// The random number generator used in the level
     static random { __random }
 
+    /// Check if a tile position is inside the level
     static contains(x, y) { __grid.valid(x, y) }    
 
+    /// Get the tile at a given position
     static [x, y] { __grid[x, y] }
 
+    /// Set the tile at a given position
     static [x, y]=(v) { __grid[x, y] = v }
 
+    /// Get the tile at a given position
     static [pos] { __grid[pos.x, pos.y] }
 
+    /// Set the tile at a given position
     static [pos]=(v) { __grid[pos.x, pos.y] = v }
 }
 
@@ -60,21 +76,26 @@ class Level {
 // It is used to store the position of the tile in the level
 // but also to store all the tiles in the level as a static variable
 class Tile is Component {
+
+    /// Must be called from the game before using the Tile class
     static init() {
         __tiles = SpraseGrid.new()
     }
 
+    /// Get the tile at a given position
     static get(x, y) {
         if(__tiles.has(x, y)) return __tiles[x, y]
         return null
     }
 
+    /// Create a new tile at a given position
     construct new(x, y) {
         _x = x
         _y = y
         __tiles[x, y] = this
     }
 
+    /// Move the tile to a new position with a given offset
     move(dx, dy) {  
         __tiles.remove(_x, _y)
         _x = _x + dx
@@ -82,11 +103,15 @@ class Tile is Component {
         __tiles[_x, _y] = this              
     }
 
+    /// Remove the tile from the level (gets called when the entity is deleted)
     finalize() {
         __tiles.remove(_x, _y)
     }
     
+    /// Get the x position of the tile
     x { _x }
+
+    /// Get the y position of the tile
     y { _y }
 }
 
@@ -98,32 +123,45 @@ class Stats is Component {
         _dodge = dodge      // Probability of dodging an attack
     }
 
+    update(dt) {
+        if(_health <= 0) owner.delete()
+    }
+
+    /// Clone the stats - used to create a copy of the stats and modify them
+    /// without changing the original. Useful for creating new entities with
+    /// similar stats
+    clone() { Stats.new(_health, _damage, _armor, _dodge, _drop) }
+
     health { _health }
     damage { _damage }
     armor { _armor }
     dodge { _dodge }
     drop { _drop }
+
+    health=(v) { _health = v }
+    damage=(v) { _damage = v }
+    armor=(v) { _armor = v }
+    dodge=(v) { _dodge = v }
+    drop=(v) { _drop = v }
 }
 
+/// A base class for all characters in the game
+/// Used by the hero and the monsters
 class Character is Component {
-
-    construct new(attackable, health, damage) {
+    /// Create a new character with a given type of attackable entities
+    construct new(attackable) {
         _attackable = attackable
-        _health = health
-        _damage = damage
         _direction = Directions.downIdx
     }
 
+    /// Initialize the character by caching the stats and the tile
     initialize() {
-        _anim = owner.getComponent(AnimatedSprite)
-        _tile = owner.getComponent(Tile)
+        _stats = owner.get(Stats)
+        _tile = owner.get(Tile)
     }
 
+    /// Update the character - just debug rendering for now
     update(dt) {
-        if(_health <= 0) {
-            owner.delete()
-        }
-
         if(Data.getBool("Debug Draw", Data.debug)) {
             var pos = Level.calculatePos(_tile)
             Render.dbgColor(0xFFFFFFFF)
@@ -131,7 +169,8 @@ class Character is Component {
         }
     }
 
-    turn() { true }  // Implement turn logic here one and return true when done
+    // Implement turn logic here one and return true when done
+    turn() { true }  
 
     /// Check if the tile in the direction has a given type flag
     checkTile(dir, type) {
@@ -159,27 +198,36 @@ class Character is Component {
         var t = Tile.get(x, y)
         if(t != null) {
             if(Bits.checkBitFlag(_attackable, t.owner.tag)) {
-                var c = t.owner.getComponentSuper(Character)
-                c.recieveAttack(dir, _damage)
+                var c = t.owner.get(Character)
+
+
+                c.recieveAttack(dir, _stats)
             }
         }
     }
 
     /// Recieve an attack from a direction
-    recieveAttack(dir, damage) {        
-        System.print("Getting pain position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
+    recieveAttack(dir, stats) {
+
+        Gameplay.message = "Attacked from direction [%(dir)]"
+
+        // System.print("Getting pain position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
+
+        //System.print("Getting pain position [%(_tile.x),%(_tile.y)] in direction [%(dir)]")
         dir = (dir + 2) % 4
-        _health = _health - damage
+        _stats.health = _stats.health - stats.damage
     }
 
+    /// Get the tile of the character
     tile { _tile }
-    health { _health }
-    damage { _damage }
 }
 
+/// A class that represents the hero of the game
+/// The hero is also a singleton, so there is only one hero in the game
 class Hero is Character {    
+    /// Create a new hero component
     construct new() {
-        super(Type.enemy, Data.getNumber("Hero Health"), Data.getNumber("Hero Damage"))
+        super(Type.enemy)
         _buttons = [Input.gamepadDPadUp,
                     Input.gamepadDPadRight,
                     Input.gamepadDPadDown,
@@ -191,6 +239,12 @@ class Hero is Character {
         __hero = this
     }
 
+    /// Finalize the hero singleton by setting it to null
+    finalize() {
+        __hero = null
+    }
+
+    /// Player turn logic
     turn() {     
         var dir = getDirection()
         if(dir >= 0) {
@@ -205,6 +259,7 @@ class Hero is Character {
         return false
     }
 
+    /// Get the direction of the player input
     getDirection() {
         for(dir in 0...4) {
             if(Input.getButtonOnce(_buttons[dir]) || Input.getKeyOnce(_keys[dir])) {
@@ -214,16 +269,24 @@ class Hero is Character {
         return -1
     }
 
+    /// Player singleton turn
     static turn() { __hero.turn() }
 
+    /// Get the hero singleton
     static hero { __hero }
  }
 
- class Monster is Character {
+
+/// A class that represents the monsters in the game
+/// The monsters are controlled by the computer and the class
+/// contains the logic play a turn for all the monsters
+class Monster is Character {
+    /// Create a new monster component
     construct new() {
-        super(Type.player, Data.getNumber("Monster Health"), Data.getNumber("Monster Damage"))         
+        super(Type.player)         
     }
 
+    /// Single monster turn logic
     turn() {
         var dir = getDirection()                                                         
         if(dir >= 0) {
@@ -236,6 +299,7 @@ class Hero is Character {
         } 
     }
 
+    /// Get the direction of the monster
     getDirection() {
         if(__fill) {
             if(__fill.has(tile.x, tile.y)) {
@@ -245,19 +309,21 @@ class Hero is Character {
         return -1
     }
 
+    /// Computer turn logic for all the monsters
     static turn() {
         var enemies = Entity.withTagOverlap(Type.enemy)        
         for(e in enemies) {
             floodFill()
-            var s = e.getComponent(Monster)
+            var s = e.get(Monster)
             s.turn()                        
         }
         return true
     }
 
+    /// An algorithm to fill the level with the directions to the hero    
     static floodFill() {
         if(Hero.hero) {
-            var hero = Hero.hero.owner.getComponent(Tile)
+            var hero = Hero.hero.owner.get(Tile)
             var open = Queue.new()
             open.push(Vec2.new(hero.x, hero.y))
             __fill = SpraseGrid.new()
@@ -280,6 +346,7 @@ class Hero is Character {
         }
     }
 
+    /// Debug render the flood fill algorithm
     static debugRender() { 
         Render.dbgColor(0xFF0000FF)    
         if(__fill != null) { 
@@ -297,13 +364,14 @@ class Hero is Character {
     }
  }
 
- class Gameplay {
+/// Combines level and character logic to create the gameplay
+class Gameplay {
     static playerTurn   { 1 }
     static computerTurn { 2 }
 
     static init() {
         __state = playerTurn
-        __font = Render.loadFont("[game]/assets/FutilePro.ttf", 20)
+        __font = Render.loadFont("[game]/assets/FutilePro.ttf", 14)
 
         var preview = Render.loadImage("[game]/assets/monochrome-transparent_packed.png")
         var r = 49
@@ -352,17 +420,26 @@ class Hero is Character {
             Type.sword: itemColor            
         }
 
+        __message = "A hero is born"
+        __timer = Data.getNumber("Message Time", Data.game)
     }    
 
     static update(dt) {
+        __timer = __timer - dt 
+        if(__timer <= 0) {
+            __message = ""
+        }
+
         if(__state == Gameplay.playerTurn) {
             if(Hero.turn()) {
                 __state = Gameplay.computerTurn
             }
         } else if(__state == Gameplay.computerTurn) {
-            if(Monster.turn()) {
-                __state = Gameplay.playerTurn
-            }            
+            if(__timer <= 0) {
+                if(Monster.turn()) {
+                    __state = Gameplay.playerTurn
+                }            
+            }
         }
     }
 
@@ -377,6 +454,7 @@ class Hero is Character {
         }
     }
 
+    /// Render the level and the UI
     static render() {
         var s = Level.tileSize  
         var sx = (Level.width - 1) * -s / 2
@@ -402,11 +480,22 @@ class Hero is Character {
             }
         }
 
-        Render.text(__font, "Gameplay", 0, -100, 1.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
+        if(Hero.hero) {
+            renderUI()
+        }
     }  
 
+    static message=(v) {
+        __message = v
+        __timer = Data.getNumber("Message Time", Data.game)
+    }
+
     static renderUI() {
-        Level.renderUI()
+        var hero = Hero.hero
+        var stats = hero.owner.get(Stats)
+        var message = "Health: %(stats.health)  Damage: %(stats.damage)  Armor: %(stats.armor)"
+        Render.text(__font, message, 0, -170, 1.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
+        Render.text(__font, __message, 0, 160, 1.0, 0xFFFFFFFF, 0x0, Render.spriteCenter)
     }
  }
 

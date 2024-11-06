@@ -3,10 +3,6 @@
         "type": "number",
         "value": 13.0
     },
-    "Bg Color": {
-        "type": "color",
-        "value": 3372220671
-    },
     "Enemy Color": {
         "type": "color",
         "value": 16776447
@@ -38,6 +34,10 @@
     "Long Brake": {
         "type": "number",
         "value": 0.009999999776482582
+    },
+    "Message Time": {
+        "type": "number",
+        "value": 0.800000011920929
     },
     "Monster Damage": {
         "type": "number",

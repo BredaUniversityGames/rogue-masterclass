@@ -35,7 +35,7 @@ class Game {
                 
         __time = 0        
         __state = generating // Skip loading
-        __alg = BSPer //Set this variable to change to another type of generator
+        __alg = BSPer // Set this variable to change to another type of generator
         __genFiber =  Fiber.new { __alg.generate() }
         __background = Background.new()
     }   
@@ -51,9 +51,6 @@ class Game {
         Entity.update(dt)        
         __alg.debugRender()
         __background.update(dt)
-    
-        var image = Render.loadImage("[shared]/images/white.png")
-        __bg = Render.createSprite(image, 0, 0, 1, 1)
     }
 
     // This function is called when the game is in the generating state
@@ -80,14 +77,8 @@ class Game {
 
     // Render the game, which means rendering all the systems and entities
     static render() {    
-        //__background.render()
-        Render.sprite(__bg, 0, 0, 0, 100, 0, Data.getColor("Bg Color"), 0x0, Render.spriteCenter)
-
+        __background.render()
         Gameplay.render()
-        //Level.render()
-        //if(__state == Game.playing) {
-        //    Level.renderUI()
-       // }
     }
  }
 

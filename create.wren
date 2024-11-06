@@ -5,39 +5,66 @@ import "xs_components" for Transform, Body, Renderable, Sprite, GridSprite, Anim
 import "xs_tools" for Tools
 import "random" for Random
 import "types" for Type
-import "ui" for Healthbar
 
+/// This class is used to create entities in the game
+/// by adding components to them
+/// As a game programming pattern, it is a factory class
 class Create {
 
     static init() {
         __random = Random.new()
         __id = 0
+
+        // Create a list of all the types of monsters
+        __monsterNames = {
+            Type.bat: "Bat",
+            Type.spider: "Spider",
+            Type.ghost: "Ghost",
+            Type.boss: "Boss",
+            Type.scorpion: "Scorpion",
+            Type.snake: "Snake"
+        }
+        __monsterStats = {
+            Type.bat: Stats.new(1, 1, 0, 0, 0),
+            Type.spider: Stats.new(1, 1, 0, 0, 0.5),
+            Type.ghost: Stats.new(2, 1, 0, 0, 0.5),
+            Type.boss: Stats.new(4, 1, 0, 0, 0),
+            Type.scorpion: Stats.new(5, 1, 0, 0, 0),
+            Type.snake: Stats.new(5, 2, 0, 0, 0)
+        }
+
+
     }
 
     static character(x, y) {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
         var tl = Tile.new(x, y)
-        entity.addComponent(t)
-        entity.addComponent(tl)
+        entity.add(t)
+        entity.add(tl)
         return entity
     }
 
     static hero(x, y) {
         var entity = character(x, y)
         var h = Hero.new()
-        entity.addComponent(h)
+        entity.add(h)
+        var s = Stats.new(10, 1, 0, 0, 0)
+        entity.add(s)
         entity.tag = Type.player
-        entity.name = "H%(nextID)"
+        entity.name = "Hero"
         return entity
     }
 
     static monster(x, y) {
         var entity = character(x, y)
-        var s = Monster.new()
-        entity.addComponent(s)
-        entity.tag = Tools.pickOne([Type.bat, Type.spider, Type.ghost, Type.boss, Type.scorpion, Type.snake])
-        entity.name = "M%(nextID)"
+        var m = Monster.new()
+        entity.add(m)
+        var type = Tools.pickOne([Type.bat, Type.spider, Type.ghost, Type.boss, Type.scorpion, Type.snake])
+        var s = __monsterStats[type].clone()
+        entity.add(s)
+        entity.tag = type
+        entity.name = __monsterNames[type]
         return entity
     }
 
@@ -46,6 +73,7 @@ class Create {
         return __id
     }
 
+    /*
     static spikes() {}
 
     static stairs() {}
@@ -55,8 +83,8 @@ class Create {
         var t = Transform.new(Level.calculatePos(x, y))
         var tl = Tile.new(x, y)
         s.flags = Render.spriteCenter
-        entity.addComponent(t)
-        entity.addComponent(tl)
+        entity.add(t)
+        entity.add(tl)
         entity.tag = Type.wall
         entity.name = "C%(nextID)"
         return entity
@@ -67,8 +95,8 @@ class Create {
         var pos = Level.calculatePos(x, y) + Vec2.new(0, Level.tileSize / 2)
         var t = Transform.new(pos)
         var tl = Tile.new(x, y)
-        entity.addComponent(t)
-        entity.addComponent(tl)
+        entity.add(t)
+        entity.add(tl)
         entity.tag = Type.wall
         entity.name = "P%(nextID)"
     }
@@ -79,8 +107,8 @@ class Create {
         var t = Transform.new(pos)
         var tl = Tile.new(x, y)
         tl.z = 0.1
-        entity.addComponent(t)
-        entity.addComponent(tl)
+        entity.add(t)
+        entity.add(tl)
         entity.name = "T%(nextID)"
         entity.tag = Type.light
     }
@@ -89,8 +117,8 @@ class Create {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
         var tl = Tile.new(x, y)
-        entity.addComponent(t)
-        entity.addComponent(tl)
+        entity.add(t)
+        entity.add(tl)
         entity.tag = Type.wall
         entity.name = "S%(nextID)"
         return entity
@@ -101,8 +129,8 @@ class Create {
         var t = Transform.new(Level.calculatePos(x, y))
         var tl = Tile.new(x, y)
         s.flags = Render.spriteCenter
-        entity.addComponent(t)
-        entity.addComponent(tl)
+        entity.add(t)
+        entity.add(tl)
         entity.tag = Type.wall | Type.light
         entity.name = "F%(nextID)"
         return entity
@@ -112,12 +140,13 @@ class Create {
         var entity = Entity.new()
         var t = Transform.new(Level.calculatePos(x, y))
         var tl = Tile.new(x, y)
-        entity.addComponent(t)
-        entity.addComponent(tl)
+        entity.add(t)
+        entity.add(tl)
         entity.tag = Type.door
         entity.name = "F%(nextID)"
         return entity
     }
+    */
 }
 
-import "gameplay" for Hero, Monster, Tile, Level
+import "gameplay" for Hero, Monster, Tile, Level, Stats
