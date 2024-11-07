@@ -1,0 +1,10 @@
+*Frame size* 
+
+- Projectile Trap: 8x8px
+- Explosion: 32x32px
+
+
+*Frame Duration*
+
+100ms
+
