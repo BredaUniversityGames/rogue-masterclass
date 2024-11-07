@@ -35,7 +35,7 @@ class Game {
                 
         __time = 0        
         __state = generating // Skip loading
-        __alg = BSPer // Set this variable to change to another type of generator
+        __alg = RandomWalk // Set this variable to change to another type of generator
         __genFiber =  Fiber.new { __alg.generate() }
         __background = Background.new()
     }   

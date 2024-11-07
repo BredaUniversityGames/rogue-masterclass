@@ -98,71 +98,15 @@ class Randy {
             Fiber.yield(longBrake)
         }
 
-        var fire = true
-        for (x in 1...hw) {
-            for (y in 1...hh) {
-                var px = x + hw
-                var py = y + hh
-                if(Level[px, py] == Type.wall) {
-                    var count = 0                    
-                    for (i in -1..1) {
-                        for (j in -1..1) {
-                            if(Level[px+i, py+j] == Type.wall) {
-                                count = count + 1
-                            }                            
-                        }
-                    }
-                    if(count == 1) {
-                        Level[x + hw, y + hh] = Type.floor
-                        Create.pillar(x + hw, y + hh, fire)
-                        Fiber.yield(shortBrake)
-
-                        Level[x + hw, hh - y] = Type.floor
-                        Create.pillar(x + hw, hh - y, fire)
-                        Fiber.yield(shortBrake)            
-
-                        Level[hw - x, y + hh] = Type.floor
-                        Create.pillar(hw - x, y + hh, fire)
-                        Fiber.yield(shortBrake)
-
-                        Level[hw - x, hh - y] = Type.floor
-                        Create.pillar(hw - x, hh - y, fire)
-                        Fiber.yield(shortBrake)
-
-                        fire = false
-                    }
-                }                
-            }            
-        }
-
-        for(i in 0...5) {
-            var pos = findFree(random)
-            Create.something(pos.x, pos.y)
-            Fiber.yield(shortBrake)
-        }
-
         Create.hero(hw, hh)
         Fiber.yield(shortBrake)
 
-        Create.door(hw, Level.height - 1, false)
-        Level[hw, Level.height - 1] = Type.floor
-        Fiber.yield(shortBrake)
-
-        Create.door(0, hh, true)
-        Level[0, hh] = Type.floor
-        Fiber.yield(shortBrake)
-
-        Create.door(Level.width - 1, hh, true)
-        Level[Level.width - 1, hh] = Type.floor
-        Fiber.yield(shortBrake)
 
         for(i in 0...level) {
             var pos = findFree(random)
             Create.monster(pos.x, pos.y)
             Fiber.yield(longBrake)
         }
-
-        Create.camera()
 
         return 0.0
     }
@@ -171,7 +115,7 @@ class Randy {
         for(i in 1...100) {
             var x = random.int(1, Level.width - 1)
             var y = random.int(1, Level.height - 1)
-            if(Level.contains(x, y) && Level[x, y] == Type.floor && Tile.get(x,y).count == 0) {
+            if(Level.contains(x, y) && Level[x, y] == Type.floor && Tile.get(x,y) == null) {
                 return Vec2.new(x,y)
             }
         }
@@ -205,16 +149,15 @@ class Walker {
         _position = _position + Directions[_direction]
         if(inBounds && _steps < 39) {
             Level[_position] = Type.floor
-            Level[-_position.x, _position.y] = Type.floor
             if( turn &&
                 Gameplay.getFlags(_position.x, _position.y) == Type.floor &&
                 _random.float(0.0, 1.0) < 0.25) {
-                Create.something(_position.x, _position.y)
+                Create.item(_position.x, _position.y)
             }
             return true
         } else {
             _position = _position - Directions[_direction]
-            Create.treasure(_position.x, _position.y)
+            Create.item(_position.x, _position.y)
             return false
         }
     }
@@ -298,7 +241,7 @@ class RandomWalk {
                         Level[x + 1, y] == Type.floor &&
                         Level[x, y - 1] == Type.floor &&
                         Level[x, y + 1] == Type.floor) {
-                        Create.pillar(x,y, true)
+                        Level[x, y] = Type.floor
                         rem.add(Vec2.new(x, y))
                     }                     
                 }                
@@ -328,7 +271,7 @@ class RandomWalk {
         for(i in 1...100) {
             var x = __random.int(1, Level.width - 1)
             var y = __random.int(1, Level.height - 1)
-            if(Level.contains(x, y) && Level[x, y] == Type.floor && Tile.get(x,y).count == 0) {
+            if(Level.contains(x, y) && Level[x, y] == Type.floor && Tile.get(x,y) == null) {
                 return Vec2.new(x,y)
             }
         }
