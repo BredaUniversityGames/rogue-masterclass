@@ -1,0 +1,18 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+      {
+        "label": "xs",
+        "type": "process",
+        "command": "${env:USERPROFILE}/AppData/Roaming/itch/apps/xs/xs.exe",
+        "group": "none",
+        "problemMatcher": [],
+        "options": {
+          "cwd": "${env:USERPROFILE}/AppData/Roaming/itch/apps/xs"
+        }
+      }
+    ]
+  }
+  

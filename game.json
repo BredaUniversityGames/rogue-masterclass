@@ -1,4 +1,16 @@
 {
+    "BSP Max Room Size": {
+        "type": "number",
+        "value": 13.0
+    },
+    "Enemy Color": {
+        "type": "color",
+        "value": 16776447
+    },
+    "From Color": {
+        "type": "color",
+        "value": 3187733247
+    },
     "Hero Damage": {
         "type": "number",
         "value": 10.0
@@ -7,21 +19,33 @@
         "type": "number",
         "value": 100.0
     },
+    "Item Color": {
+        "type": "color",
+        "value": 16721151
+    },
     "Level Height": {
         "type": "number",
-        "value": 20.0
+        "value": 19.0
     },
     "Level Width": {
         "type": "number",
-        "value": 38.0
+        "value": 36.0
     },
     "Long Brake": {
         "type": "number",
-        "value": 0.0
+        "value": 0.019999999552965164
+    },
+    "Message Time": {
+        "type": "number",
+        "value": 0.800000011920929
     },
     "Monster Damage": {
         "type": "number",
         "value": 10.0
+    },
+    "Monster Density": {
+        "type": "number",
+        "value": 0.029999999329447746
     },
     "Monster Health": {
         "type": "number",
@@ -29,18 +53,26 @@
     },
     "Move Speed": {
         "type": "number",
-        "value": 0.0
+        "value": 1.0
     },
     "Move Time": {
         "type": "number",
-        "value": 0.30000001192092896
+        "value": 0.003000000026077032
+    },
+    "Player Color": {
+        "type": "color",
+        "value": 4294066175
     },
     "Short Brake": {
         "type": "number",
-        "value": 0.0
+        "value": 0.003000000026077032
     },
     "Tile Size": {
         "type": "number",
-        "value": 8.0
+        "value": 16.0
+    },
+    "To Color": {
+        "type": "color",
+        "value": 857972223
     }
 }
