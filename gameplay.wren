@@ -261,7 +261,7 @@ class Hero is Character {
         var dir = getDirection()
         if(dir >= 0) {
             _direction = Directions[dir]
-            if(checkTile(dir, Type.enemy | Type.item)) {
+            if(checkTile(dir, Type.enemy | Type.item)) { // |
                 attackTile(dir)
             } else if(!checkTile(dir, Type.blocking)) {
                 moveTile(dir)
