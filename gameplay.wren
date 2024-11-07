@@ -126,19 +126,19 @@ class Stats is Component {
         _damage = damage    // Damage points
         _armor = armor      // Armor points
         _drop = drop        // Drop chance
-
     }
-
-    /*
-    update(dt) {
-        if(_health <= 0) owner.delete()
-    }
-    */
 
     /// Clone the stats - used to create a copy of the stats and modify them
     /// without changing the original. Useful for creating new entities with
     /// similar stats
     clone() { Stats.new(_health, _damage, _armor, _drop) }
+
+    add(other) {
+        _health = _health + other.health
+        _damage = _damage + other.damage
+        _armor = _armor + other.armor
+        _drop = _drop + other.drop
+    }
 
     health { _health }
     damage { _damage }
@@ -217,14 +217,13 @@ class Character is Component {
                 if(stats.health <= 0) {
                     Gameplay.message = "%(owner.name) kills %(t.owner.name)"
                     t.owner.delete()
-
-                    //if(Tools.random.float(0.0, 1.0) < stats.drop) {
-                    {
-                        var item = Create.item(x, y)
-                    }
+                    if(Tools.random.float(0.0, 1.0) < stats.drop) Create.item(x, y)                    
                 }
             } else if(Bits.checkBitFlag(Type.item, t.owner.tag)) {
-                Gameplay.message = "%(owner.name) hits a wall"
+                Gameplay.message = "%(owner.name) picks up %(t.owner.name)"
+                _stats.add(t.owner.get(Stats))
+                t.owner.delete()
+                moveTile(dir)  
             }
 
         }
@@ -254,6 +253,7 @@ class Hero is Character {
     /// Finalize the hero singleton by setting it to null
     finalize() {
         __hero = null
+        Gameplay.message = "The hero has fallen"
     }
 
     /// Player turn logic
@@ -261,7 +261,7 @@ class Hero is Character {
         var dir = getDirection()
         if(dir >= 0) {
             _direction = Directions[dir]
-            if(checkTile(dir, Type.enemy)) {
+            if(checkTile(dir, Type.enemy | Type.item)) {
                 attackTile(dir)
             } else if(!checkTile(dir, Type.blocking)) {
                 moveTile(dir)

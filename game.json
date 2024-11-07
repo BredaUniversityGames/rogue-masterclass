@@ -33,7 +33,7 @@
     },
     "Long Brake": {
         "type": "number",
-        "value": 0.009999999776482582
+        "value": 0.019999999552965164
     },
     "Message Time": {
         "type": "number",
@@ -42,6 +42,10 @@
     "Monster Damage": {
         "type": "number",
         "value": 10.0
+    },
+    "Monster Density": {
+        "type": "number",
+        "value": 0.029999999329447746
     },
     "Monster Health": {
         "type": "number",

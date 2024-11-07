@@ -510,40 +510,21 @@ class BSPer {
             var dy = room.to.y - room.from.y
             var area = dx * dy
 
+            /* We could add some stuff here
             var stuff = area / 26
             for(i in 0...stuff) {
                 var pos = findFree(room)
-                // Create.something(pos.x, pos.y)
+                Create.something(pos.x, pos.y)
                 Fiber.yield(brake)
             }
+            */ 
 
-            var monsters = area / 18
+            var monsters = area * Data.getNumber("Monster Density")
             for(i in 0...monsters) {
                 var pos = findFree(room)
                 Create.monster(pos.x, pos.y)
                 Fiber.yield(brake)
             }
-
-
-            /*
-            var lightable = []
-            for(x in room.from.x...room.to.x) {
-                if(Level[x, room.to.y] == Type.wall) {
-                    lightable.add(x)
-                }
-            }
-
-            if(lightable.count <= 5 && lightable.count > 0) {
-                System.print("lightable.count: %(lightable.count)")
-                var x = lightable[(lightable.count / 2 - 1).round ]
-                Create.wallTorch(x, room.to.y)    
-            } else {
-                var xl = lightable[(lightable.count / 2 - 1).round - 2]
-                var xr = lightable[(lightable.count / 2 - 1).round + 2]
-                Create.wallTorch(xl, room.to.y)
-                Create.wallTorch(xr, room.to.y)
-            }
-            */
             
             Fiber.yield(brake)
         }

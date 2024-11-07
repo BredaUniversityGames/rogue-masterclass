@@ -25,11 +25,11 @@ class Create {
             Type.snake: "Snake"
         }
         __monsterStats = {
-            Type.bat: Stats.new(1, 1, 0, 0.2),
+            Type.bat: Stats.new(1, 1, 0, 0.4),
             Type.spider: Stats.new(1, 1, 0, 0.5),
-            Type.ghost: Stats.new(2, 1, 0, 0.5),
+            Type.ghost: Stats.new(2, 1, 0, 0.6),
             Type.boss: Stats.new(4, 1, 0, 1),
-            Type.scorpion: Stats.new(1, 1, 1, 0.2),
+            Type.scorpion: Stats.new(1, 1, 1, 0.4),
             Type.snake: Stats.new(1, 2, 0, 0.75)
         }
         __itemNames = {
@@ -90,6 +90,8 @@ class Create {
             Type.helmet, Type.armor, Type.sword, Type.food])
         entity.tag = type
         entity.name = __itemNames[type]
+        var s = __itemStats[type].clone()
+        entity.add(s)
         return entity
     }
 
@@ -97,81 +99,6 @@ class Create {
         __id = __id + 1
         return __id
     }
-
-    /*
-    static spikes() {}
-
-    static stairs() {}
-
-    static crate() {
-        var entity = Entity.new()
-        var t = Transform.new(Level.calculatePos(x, y))
-        var tl = Tile.new(x, y)
-        s.flags = Render.spriteCenter
-        entity.add(t)
-        entity.add(tl)
-        entity.tag = Type.wall
-        entity.name = "C%(nextID)"
-        return entity
-    }
-    
-    static pillar(x, y, fire) {
-        var entity = Entity.new()
-        var pos = Level.calculatePos(x, y) + Vec2.new(0, Level.tileSize / 2)
-        var t = Transform.new(pos)
-        var tl = Tile.new(x, y)
-        entity.add(t)
-        entity.add(tl)
-        entity.tag = Type.wall
-        entity.name = "P%(nextID)"
-    }
-
-    static wallTorch(x, y) {
-        var entity = Entity.new()
-        var pos = Level.calculatePos(x, y) + Vec2.new(0, Level.tileSize / 2)
-        var t = Transform.new(pos)
-        var tl = Tile.new(x, y)
-        tl.z = 0.1
-        entity.add(t)
-        entity.add(tl)
-        entity.name = "T%(nextID)"
-        entity.tag = Type.light
-    }
-
-    static something(x, y) {
-        var entity = Entity.new()
-        var t = Transform.new(Level.calculatePos(x, y))
-        var tl = Tile.new(x, y)
-        entity.add(t)
-        entity.add(tl)
-        entity.tag = Type.wall
-        entity.name = "S%(nextID)"
-        return entity
-    }
-
-    static treasure(x, y) {
-        var entity = Entity.new()
-        var t = Transform.new(Level.calculatePos(x, y))
-        var tl = Tile.new(x, y)
-        s.flags = Render.spriteCenter
-        entity.add(t)
-        entity.add(tl)
-        entity.tag = Type.wall | Type.light
-        entity.name = "F%(nextID)"
-        return entity
-    }
-
-    static door(x, y, vertical) {
-        var entity = Entity.new()
-        var t = Transform.new(Level.calculatePos(x, y))
-        var tl = Tile.new(x, y)
-        entity.add(t)
-        entity.add(tl)
-        entity.tag = Type.door
-        entity.name = "F%(nextID)"
-        return entity
-    }
-    */
 }
 
 import "gameplay" for Hero, Monster, Tile, Level, Stats
