@@ -36,17 +36,17 @@ class Game {
         __time = 0        
         __state = generating // Skip loading
 
-        var alg = Data.getNumber("Algorithm");
+        var alg = Data.getNumber("Algorithm|Single Room|Randy|RandomWalk|BSP")
         if(alg == 0) {
-            __alg = SingleRoom.new()
+            __alg = SingleRoom
         } else if(alg == 1) {
-            __alg = Randy.new()
+            __alg = Randy
         } else if(alg == 2) {
-            __alg = BSPer.new()
+            __alg = RandomWalk            
         } else if(alg == 3) {
-            __alg = RandomWalk.new()
+            __alg = BSPer
         } else if(alg == 4) {
-            __alg = MyRandomWalker.new()
+            __alg = MyRandomWalker
         } else {
             System.print("Invalid algorithm number, using default")
             __alg = SingleRoom.new()

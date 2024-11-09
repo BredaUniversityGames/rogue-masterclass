@@ -1,7 +1,7 @@
 {
     "Always on top": {
         "type": "bool",
-        "value": true
+        "value": false
     },
     "Height": {
         "type": "number",
@@ -13,7 +13,7 @@
     },
     "Multiplier": {
         "type": "number",
-        "value": 3.0
+        "value": 2.0
     },
     "Snap to pixels": {
         "type": "bool",

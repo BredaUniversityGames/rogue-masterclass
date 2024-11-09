@@ -3,7 +3,7 @@ import "xs_math"for Math, Bits, Vec2, Color
 import "xs_assert" for Assert
 import "xs_ec"for Entity, Component
 import "xs_components" for Transform, Body, Renderable, Sprite, GridSprite, AnimatedSprite
-import "xs_containers" for Grid, SpraseGrid, Queue
+import "xs_containers" for Grid, SparseGrid, Queue
 import "xs_tools" for Tools
 import "random" for Random
 import "types" for Type
@@ -80,7 +80,7 @@ class Tile is Component {
 
     /// Must be called from the game before using the Tile class
     static initialize() {
-        __tiles = SpraseGrid.new()
+        __tiles = SparseGrid.new()
     }
 
     /// Get the tile at a given position
@@ -340,7 +340,7 @@ class Monster is Character {
             var hero = Hero.hero.owner.get(Tile)
             var open = Queue.new()
             open.push(Vec2.new(hero.x, hero.y))
-            __fill = SpraseGrid.new()
+            __fill = SparseGrid.new()
             __fill[hero.x, hero.y] = Directions.noneIdx
             var count = 50
             while(!open.empty() && count > 0) {
