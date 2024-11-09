@@ -35,7 +35,24 @@ class Game {
                 
         __time = 0        
         __state = generating // Skip loading
-        __alg = RandomWalk // Set this variable to change to another type of generator
+
+        var alg = Data.getNumber("Algorithm");
+        if(alg == 0) {
+            __alg = SingleRoom.new()
+        } else if(alg == 1) {
+            __alg = Randy.new()
+        } else if(alg == 2) {
+            __alg = BSPer.new()
+        } else if(alg == 3) {
+            __alg = RandomWalk.new()
+        } else if(alg == 4) {
+            __alg = MyRandomWalker.new()
+        } else {
+            System.print("Invalid algorithm number, using default")
+            __alg = SingleRoom.new()
+        }
+
+        
         __genFiber =  Fiber.new { __alg.generate() }
         __background = Background.new()
     }   

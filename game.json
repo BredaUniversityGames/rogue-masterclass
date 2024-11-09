@@ -65,7 +65,7 @@
     },
     "Short Brake": {
         "type": "number",
-        "value": 0.003000000026077032
+        "value": 0.029999999329447746
     },
     "Tile Size": {
         "type": "number",

@@ -1,5 +1,6 @@
 import "xs" for Data, Input, Render
 import "xs_math" for Vec2, Math
+import "xs_containers" for Queue
 import "gameplay" for Level, Tile
 import "types" for Type
 import "directions" for Directions
@@ -289,6 +290,10 @@ class Rect {
 
     toString { "[%(from.x),%(from.y)]-[%(to.x),%(to.y)]" }
 
+    contains(point) {
+        return point.x >= _from.x && point.x <= _to.x && point.y >= _from.y && point.y <= _to.y
+    }
+
     from { _from }
     to { _to }
 }
@@ -320,8 +325,9 @@ class BSPer {
         makeRooms()     // Carve out the rooms
         makeHalls()     // Connect the rooms
         postProcess()   // Remove extra wall tiles
+        __graph = createGraph()
         addHero()       // Put our player on the map
-        fillRoms()      // Add stuff to the rooms
+        fillRoms()      // Add stuff to the rooms        
 
         return 0.0      // We done here
     }
@@ -381,8 +387,40 @@ class BSPer {
         System.print("rooms: %(__rooms.count)")
     }
 
+    static createGraph() {
+        var graph = {}
+        for(i in 0...__rooms.count) {
+            graph[i] = List.new()
+        }
+        for(hall in __halls) {
+            var from = null
+            var to = null
+            for(i in 0...__rooms.count) {
+                var room = __rooms[i]
+                if(room.contains(hall.from)) {
+                    from = i
+                }
+                if(room.contains(hall.to)) {
+                    to = i
+                }
+            }
+            if(from == null || to == null) {
+                System.print("Hall not connected to room")
+                continue
+            }
+            if(from == to) {
+                System.print("Hall connects same room")
+                continue
+            }
+            graph[from].add(to)
+            graph[to].add(from)
+        }
+        return graph
+    }
+
     static makeHalls() {
         var brake = Data.getNumber("Long Brake")
+        var newHalls = []
         for(hall in __halls) {
             var dir = hall.to - hall.from
             var len = dir.magnitude.round
@@ -406,11 +444,15 @@ class BSPer {
                         pos.y = pos.y.round
                         Level[pos.x, pos.y] = Type.floor
                     }
+                    var from = mid + dir * -2
+                    var to = mid + dir * 2
+                    newHalls.add(Rect.new(from, to))
                     break
                 }
-            }
+            }            
             Fiber.yield(brake)                    
         }
+        __halls = newHalls
     }
 
     static postProcess() {
@@ -440,13 +482,47 @@ class BSPer {
         }
     }
 
-    static addHero() {
-        var room = __rooms[0]
-        var pos = findFree(room)
-        Create.hero(pos.x, pos.y)
+    static addHero() {        
     }
 
     static fillRoms() {
+
+        // Find the terminal rooms
+        var terminalRooms = []
+        for(i in 0...__rooms.count) {
+            var room = __rooms[i]
+            var count = __graph[i].count    // The graph is bidirectional
+            if(count == 1) terminalRooms.add(i)
+        }
+
+        // Spawn the hero in a random terminal room
+        var heroRoom =  __random.sample(terminalRooms)
+        var room = __rooms[heroRoom]
+        var pos = findFree(room)
+        Create.hero(pos.x, pos.y)
+
+        // Get the distance from the hero to all other rooms
+        __distances = {}
+        var visited = List.new()
+        var queue = Queue.new()
+        queue.push([heroRoom, 0])
+        visited.add(heroRoom)
+        while(!queue.empty()) {
+            var next = queue.pop()
+            __distances[next[0]] = next[1]
+            for(neigh in __graph[next[0]]) {
+                if(!visited.contains(neigh)) {
+                    queue.push([neigh, next[1] + 1])
+                    visited.add(neigh)
+                }
+            }
+        }
+
+        //for(i in 0...__rooms.count) {
+        //    
+        //
+        //}
+
         var brake = Data.getNumber("Short Brake")
         for(room in __rooms) {
             var dx = room.to.x - room.from.x
@@ -513,6 +589,30 @@ class BSPer {
                 hall.to.x,
                 hall.to.y) + off                        
             Render.dbgLine(from.x, from.y, to.x, to.y)            
+        }
+
+        if(__graph == null) return
+
+        // Render the graph
+        Render.dbgColor(0xFFFFFFFF)
+        for(node in __graph.keys) {
+            var from = __rooms[node]
+
+            var fromPos = Level.calculatePos(
+            from.from.x + (from.to.x - from.from.x) / 2,
+            from.from.y + (from.to.y - from.from.y) / 2)
+            var connections =  __graph[node].count  
+            var distance = __distances[node]
+
+            Render.dbgText("%(node)-%(connections)-%(distance)", fromPos.x, fromPos.y, 1)
+
+            for(to in __graph[node]) {
+                var to = __rooms[to]
+                var toPos = Level.calculatePos(
+                    to.from.x + (to.to.x - to.from.x) / 2,
+                    to.from.y + (to.to.y - to.from.y) / 2)
+                Render.dbgLine(fromPos.x, fromPos.y, toPos.x, toPos.y)
+            }            
         }
     }
 

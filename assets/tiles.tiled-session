@@ -1,14 +1,20 @@
 {
-    "activeFile": "",
+    "activeFile": "monochrome-transparent_packed.tsx",
     "expandedProjectPaths": [
     ],
     "fileStates": {
+        "monochrome-transparent_packed.tsx": {
+            "scaleInDock": 1,
+            "scaleInEditor": 2.2674
+        }
     },
     "last.imagePath": "/Users/bojanendrovski/Documents/Games/rogue-masterclass/assets",
     "openFiles": [
+        "monochrome-transparent_packed.tsx"
     ],
     "project": "tiles.tiled-project",
     "recentFiles": [
+        "monochrome-transparent_packed.tsx"
     ],
     "tileset.lastUsedFormat": "tsx",
     "tileset.tileSize": {
