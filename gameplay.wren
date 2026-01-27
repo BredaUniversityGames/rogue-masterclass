@@ -1,10 +1,9 @@
-import "xs" for Data, Input, Render
-import "xs_math"for Math, Bits, Vec2, Color
-import "xs_assert" for Assert
-import "xs_ec"for Entity, Component
-import "xs_components" for Transform, Body, Renderable, Sprite, GridSprite, AnimatedSprite
-import "xs_containers" for Grid, SparseGrid, Queue
-import "xs_tools" for Tools
+import "xs/core" for Data, Input, Render
+import "xs/math"for Math, Bits, Vec2, Color
+import "xs/ec"for Entity, Component
+import "xs/components" for Transform, Body, Renderable, Sprite, GridSprite, AnimatedSprite
+import "xs/containers" for Grid, SparseGrid, Queue
+import "xs/tools" for Tools
 import "random" for Random
 import "types" for Type
 import "directions" for Directions

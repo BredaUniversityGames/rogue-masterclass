@@ -1,7 +1,7 @@
 {
     "Algorithm|Single Room|Randy|RandomWalk|BSP": {
         "type": "number",
-        "value": 2.0
+        "value": 3.0
     },
     "BSP Max Room Size": {
         "type": "number",

@@ -1,6 +1,6 @@
-import "xs" for Data, Input, Render
-import "xs_math" for Vec2, Math
-import "xs_containers" for Queue
+import "xs/core" for Data, Input, Render
+import "xs/math" for Vec2, Math
+import "xs/containers" for Queue
 import "gameplay" for Level, Tile
 import "types" for Type
 import "directions" for Directions

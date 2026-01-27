@@ -1,4 +1,4 @@
-import "xs_math" for Vec2
+import "xs/math" for Vec2
 
 class Directions {
     static upIdx    { 0 }
