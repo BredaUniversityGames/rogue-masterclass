@@ -9,7 +9,7 @@
     },
     "Main": {
         "type": "string",
-        "value": "game.wren"
+        "value": "code/game.wren"
     },
     "Multiplier": {
         "type": "number",

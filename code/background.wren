@@ -3,7 +3,7 @@ import "xs/math" for Math, Color
 
 class Background {
 
-    construct new() {
+    construct new() { 
         _time = 0.0
 
         var image = Render.loadImage("[shared]/images/white.png")

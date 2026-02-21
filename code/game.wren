@@ -1,16 +1,10 @@
-/// The imports of files that are used in this file usually go at the top.
-/// If two files import each other (circular dependencies), then import go to the bottom of the file.
 import "xs/core" for Data, Input, Render
-//      ^       ^ class names that are imported
-//      | file name without extension, relative to the this file (except shared modules and system libs)
-
 import "xs/math"for Math, Bits, Vec2, Color
 import "xs/ec"for Entity, Component
 import "xs/components" for Transform, Body, Renderable, Sprite, GridSprite, AnimatedSprite
 import "types" for Type
 import "directions" for Directions
 import "gameplay" for Level
-import "background" for Background
 
 // There needs class called Game in you main file
 class Game {
@@ -53,7 +47,8 @@ class Game {
 
         
         __genFiber =  Fiber.new { __alg.generate() }
-        __background = Background.new()
+        // var background = Render.loadImage("[shared]/images/white.png")
+        // __background = Render.createSprite(background, 0, 0, 1, 1)
     }   
     
     // Update the game, which means updating all the systems
@@ -66,7 +61,6 @@ class Game {
 
         Entity.update(dt)        
         __alg.debugRender()
-        __background.update(dt)
     }
 
     // This function is called when the game is in the generating state
@@ -93,7 +87,7 @@ class Game {
 
     // Render the game, which means rendering all the systems and entities
     static render() {    
-        __background.render()
+        //Render.sprite(__background, 0, 0, 0, 1, 0, 0xFFFFFFFF, 0x00000000, 0)
         Gameplay.render()
     }
  }
