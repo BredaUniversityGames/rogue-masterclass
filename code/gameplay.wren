@@ -18,7 +18,8 @@ class Level {
         __tileSize = Data.getNumber("Tile Size", Data.game)
         __width = Data.getNumber("Level Width", Data.game)
         __height = Data.getNumber("Level Height", Data.game)
-        __grid = Grid.new(__width, __height, Type.empty)        
+        __grid = Grid.new(__width, __height, Type.empty)
+        __visualGrid = Grid.new(__width, __height, Type.empty)
     }
 
     /// Calculate the position of a tile in the level
@@ -70,6 +71,12 @@ class Level {
 
     /// Set the tile at a given position
     static [pos]=(v) { __grid[pos.x, pos.y] = v }
+
+    /// Get the visual tile at a given position (used for rendering)
+    static visual(x, y) { __visualGrid[x, y] }
+
+    /// Set the visual tile at a given position (used for rendering)
+    static setVisual(x, y, v) { __visualGrid[x, y] = v }
 }
 
 // A compenent that represents a tile in the level
@@ -498,7 +505,19 @@ class Gameplay {
         if(Hero.hero) {
             renderUI()
         }
-    }  
+
+        for (x in 0...Level.width) {
+            for (y in 0...Level.height) {
+                var tile = Tile.get(x, y)
+                if(tile != null) {
+                    var pos = Level.calculatePos(tile)
+                    var sprite = __tiles[tile.owner.tag]
+                    var color = __colors[tile.owner.tag] == null ? 0xFFFFFFFF : __colors[tile.owner.tag]
+                    Render.sprite(sprite, pos.x, pos.y, 0.0, 1.0, 0.0, color, 0x0, Render.spriteCenter)
+                }
+            }
+        }
+    }
 
     static message=(v) {
         __message = v

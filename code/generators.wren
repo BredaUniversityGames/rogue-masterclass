@@ -37,7 +37,15 @@ class SingleRoom {
             Fiber.yield(shortBrake)
         }
 
-        Fiber.yield(longBrake)      
+        Fiber.yield(longBrake)
+
+
+        for(x in 0...width) {
+            for(y in 0...height) {                
+                var viz = Level[x, y]
+            }
+            Fiber.yield(shortBrake)
+        }
         
         //create gameplay objects
         Create.monster(15,15)
