@@ -9,11 +9,11 @@
     },
     "Enemy Color": {
         "type": "color",
-        "value": 16776447
+        "value": 4278231807
     },
     "From Color": {
         "type": "color",
-        "value": 3187733247
+        "value": 419477247
     },
     "Hero Damage": {
         "type": "number",
@@ -77,6 +77,6 @@
     },
     "To Color": {
         "type": "color",
-        "value": 857972223
+        "value": 100675071
     }
 }

@@ -18,7 +18,7 @@ class Level {
         __tileSize = Data.getNumber("Tile Size", Data.game)
         __width = Data.getNumber("Level Width", Data.game)
         __height = Data.getNumber("Level Height", Data.game)
-        __grid = Grid.new(__width, __height, Type.empty)        
+        __grid = Grid.new(__width, __height, Type.empty)    
     }
 
     /// Calculate the position of a tile in the level
@@ -413,7 +413,7 @@ class Gameplay {
             Type.armor: Render.createGridSprite(preview, r, c, 82),
             Type.sword: Render.createGridSprite(preview, r, c, 130),
             Type.food: Render.createGridSprite(preview, r, c, 817)
-        }
+        }        
 
         var enemyColor = Data.getColor("Enemy Color", Data.game)
         var playerColor = Data.getColor("Player Color", Data.game)
@@ -488,7 +488,7 @@ class Gameplay {
                 } else {
                     var sprite = __tiles[t]
                     var color = __colors[t] == null ? 0xFFFFFFFF : __colors[t]
-                    if(sprite != null) {
+                    if(sprite != null) {                        
                         Render.sprite(sprite, px, py, 0.0, 1.0, 0.0, color, 0x0, Render.spriteCenter)
                     }
                 }
